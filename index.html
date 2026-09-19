@@ -1,0 +1,2472 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#007AFF">
+<title>Sevenine — Еженедельный отчёт</title>
+</head>
+<body>
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --blue: #007AFF; --black: #000000; --gray1: #1C1C1E;
+    --gray3: #636366; --gray4: #AEAEB2; --gray5: #E5E5EA; --gray6: #F2F2F7;
+    --white: #FFFFFF; --radius: 12px; --radius-sm: 8px;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; background: var(--gray6); color: var(--gray1); padding: 24px 16px 40px; }
+  .card { background: var(--white); border-radius: 20px; max-width: 600px; margin: 0 auto; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08), 0 8px 32px rgba(0,0,0,.06); }
+  .header { padding: 24px 24px 18px; border-bottom: 0.5px solid var(--gray5); display: flex; align-items: center; justify-content: space-between; }
+  .brand-line { display: flex; align-items: baseline; }
+  .brand-black { font-size: 20px; font-weight: 600; color: var(--black); letter-spacing: -0.5px; }
+  .brand-blue  { font-size: 20px; font-weight: 600; color: var(--blue); letter-spacing: -0.5px; }
+  .brand-sub { font-size: 10px; color: var(--gray4); margin-top: 2px; letter-spacing: .03em; }
+  .report-label { font-size: 10px; font-weight: 500; color: var(--blue); background: rgba(0,122,255,.08); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
+
+  .lang-bar { padding: 11px 24px; border-bottom: 0.5px solid var(--gray5); display: flex; justify-content: flex-end; }
+  .lang-seg { display: inline-flex; background: var(--gray6); border-radius: 10px; padding: 3px; gap: 2px; }
+  .lang-btn { border: none; background: transparent; font-family: inherit; font-size: 11px; font-weight: 600; color: var(--gray3); padding: 5px 13px; border-radius: 8px; cursor: pointer; transition: all .15s; letter-spacing: .04em; }
+  .lang-btn:hover { color: var(--blue); }
+  .lang-btn.active { background: var(--white); color: var(--blue); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+
+  .section { padding: 18px 24px; border-bottom: 0.5px solid var(--gray5); }
+  .section-label { font-size: 9px; font-weight: 700; color: var(--blue); letter-spacing: .09em; text-transform: uppercase; margin-bottom: 12px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 3px; }
+  .field-label { font-size: 10px; color: var(--gray4); font-weight: 500; }
+  .field input, .field select, .week-selects input { font-size: 13px; color: var(--gray1); border: none; border-bottom: 1px solid var(--gray5); background: transparent; padding: 4px 0; outline: none; width: 100%; font-family: inherit; -webkit-appearance: none; }
+  .field input:focus, .field select:focus, .week-selects input:focus { border-bottom-color: var(--blue); }
+  .week-selects { display: flex; gap: 6px; align-items: center; }
+
+  .prep-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .prep-hint { font-size: 10px; color: var(--gray3); margin-bottom: 8px; line-height: 1.4; }
+  .prep-card { position: relative; border: 1px solid var(--gray5); border-radius: 10px; padding: 10px 6px; text-align: center; cursor: pointer; transition: all .18s; background: var(--white); user-select: none; opacity: .72; }
+  .prep-card:hover { border-color: var(--blue); opacity: 1; }
+  .prep-check { display: none; position: absolute; top: 5px; right: 5px; width: 17px; height: 17px; border-radius: 50%; color: #fff; font-size: 10px; font-weight: 700; line-height: 17px; }
+  .prep-card.sel-1, .prep-card.sel-2, .prep-card.sel-3 { opacity: 1; }
+  .prep-card.sel-1 .prep-check, .prep-card.sel-2 .prep-check, .prep-card.sel-3 .prep-check { display: block; }
+  .prep-card.sel-1 .prep-check { background: #FF3B30; }
+  .prep-card.sel-2 .prep-check { background: #FF9500; }
+  .prep-card.sel-3 .prep-check { background: #34C759; }
+  .prep-num { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .p1 .prep-num { color: #FF3B30; } .p2 .prep-num { color: #FF9500; } .p3 .prep-num { color: #34C759; }
+  .prep-title { font-size: 10px; font-weight: 700; color: var(--gray1); margin-bottom: 4px; }
+  .prep-desc { font-size: 8.5px; color: var(--gray3); line-height: 1.4; }
+  .prep-card.sel-1 { background: rgba(255,59,48,.05); border-color: #FF3B30; }
+  .prep-card.sel-2 { background: rgba(255,149,0,.05); border-color: #FF9500; }
+  .prep-card.sel-3 { background: rgba(52,199,89,.05); border-color: #34C759; }
+
+  /* star of the week */
+  .star-toggle { width: 100%; display: flex; align-items: center; gap: 12px; border: 1px solid var(--gray5); border-radius: 12px; padding: 11px 14px; background: var(--white); cursor: pointer; font-family: inherit; text-align: left; transition: all .18s; }
+  .star-toggle:hover { border-color: #FFB300; }
+  .st-ico { width: 34px; height: 34px; border-radius: 50%; background: var(--gray6); color: var(--gray4); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; transition: all .18s; }
+  .st-text { flex: 1; }
+  .st-title { font-size: 12px; font-weight: 700; color: var(--gray1); }
+  .st-sub { font-size: 9.5px; color: var(--gray3); line-height: 1.4; margin-top: 2px; }
+  .st-check { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid var(--gray5); flex-shrink: 0; color: #fff; font-size: 10px; font-weight: 700; line-height: 15px; text-align: center; transition: all .18s; }
+  .star-toggle.on { border-color: #FFB300; background: rgba(255,179,0,.07); }
+  .star-toggle.on .st-ico { background: linear-gradient(135deg,#FFC93C,#FF9F0A); color: #fff; }
+  .star-toggle.on .st-check { background: #FF9F0A; border-color: #FF9F0A; }
+  .star-toggle.on .st-check::after { content: '\2713'; }
+  .star-reason { display: none; margin-top: 10px; }
+  .star-reason.show { display: block; }
+  .star-reason .sr-label { font-size: 10px; color: var(--gray3); font-weight: 600; margin-bottom: 5px; }
+  .star-reason textarea { border-color: #FFD98A; background: #FFFBF0; }
+  .star-reason textarea:focus { border-color: #FF9F0A; background: var(--white); }
+
+  .tbl-head { display: grid; grid-template-columns: .85fr 110px 1.35fr; gap: 8px; margin-bottom: 4px; padding-bottom: 5px; border-bottom: 0.5px solid var(--gray5); }
+  .tbl-head span { font-size: 9px; font-weight: 700; color: var(--gray4); letter-spacing: .04em; text-transform: uppercase; line-height: 1.3; }
+  .skills-list { display: flex; flex-direction: column; }
+  .skill-item { border-bottom: 0.5px solid var(--gray6); }
+  .skill-item:last-child { border-bottom: none; }
+  .skill-row { display: grid; grid-template-columns: .85fr 110px 1.35fr; align-items: start; gap: 8px; padding: 9px 0; }
+  .skill-sugg { display: none; flex-wrap: wrap; gap: 5px; padding: 0 0 9px; }
+  .skill-sugg.show { display: flex; }
+  .sugg-below { padding: 10px 0 0; }
+  .obs-themes { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 9px; }
+  .obs-tab { border: 1px solid var(--gray5); background: var(--white); color: var(--gray3); font-family: inherit; font-size: 10.5px; font-weight: 600; padding: 5px 10px; border-radius: 14px; cursor: pointer; transition: all .15s; }
+  .obs-tab:hover { border-color: var(--blue); color: var(--blue); }
+  .obs-tab.on { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .sugg-chip { border: 1px solid var(--gray5); background: var(--gray6); color: var(--gray1); font-family: inherit; font-size: 10.5px; line-height: 1.35; text-align: left; padding: 5px 9px; border-radius: 14px; cursor: pointer; transition: all .15s; }
+  .sugg-chip:hover { border-color: var(--blue); color: var(--blue); background: rgba(0,122,255,.06); }
+  .sugg-chip.added { border-color: var(--blue); background: rgba(0,122,255,.10); color: var(--blue); }
+  .sugg-chip.added::before { content: '✓ '; font-weight: 700; }
+  .skill-label-line1 { font-size: 12px; font-weight: 600; color: var(--gray1); }
+  .stars { display: flex; gap: 2px; }
+  .star { font-size: 17px; cursor: pointer; color: var(--gray5); transition: color .12s, transform .1s; user-select: none; line-height: 1; }
+  .star.on { color: var(--blue); }
+  .star:hover { transform: scale(1.2); }
+  .skill-comment { font-size: 11px; line-height: 1.4; border: none; border-bottom: 1px solid var(--gray5); background: transparent; outline: none; width: 100%; color: var(--gray1); font-family: inherit; padding: 2px 0; resize: none; display: block; }
+  .skill-comment:focus { border-bottom-color: var(--blue); }
+  .field-textarea { width: 100%; border: 1px solid var(--gray5); border-radius: var(--radius-sm); padding: 9px 11px; font-size: 12px; font-family: inherit; color: var(--gray1); background: var(--gray6); resize: none; outline: none; line-height: 1.55; }
+  .field-textarea:focus { border-color: var(--blue); background: var(--white); }
+  .actions { padding: 18px 24px 22px; }
+  .btn-save { width: 100%; padding: 13px; background: var(--blue); color: var(--white); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; transition: opacity .15s; }
+  .btn-save:hover { opacity: .88; } .btn-save:disabled { opacity: .45; cursor: not-allowed; }
+  .status { font-size: 11px; color: var(--gray4); text-align: center; margin-top: 8px; min-height: 16px; }
+
+  /* snapshot */
+  #snapshot { position: fixed; left: -9999px; top: 0; width: 540px; height: 960px; background: white; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; overflow: hidden; }
+  .sn { width: 100%; height: 100%; display: flex; flex-direction: column; padding: 28px 28px 20px; position: relative; overflow: hidden; }
+  .sn-stamp { display: none; position: absolute; right: 6px; bottom: 34px; z-index: 0; transform: rotate(-16deg); }
+  .sn.stamped .sn-stamp { display: block; }
+  .sn-stamp .st-seal { display: block; width: 268px; height: 268px; }
+  .sn-hdr, .sn-star, .sn-sec, .sn-footer { position: relative; z-index: 1; }
+  .sn.stamped .sn-box { background: rgba(242,242,247,.72); }
+  .sn-hdr { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 14px; border-bottom: 1.5px solid #E5E5EA; margin-bottom: 16px; flex-shrink: 0; }
+  .sn-brand { font-size: 26px; font-weight: 700; letter-spacing: -.5px; line-height: 1; }
+  .sn-brand .nb { color: #000; } .sn-brand .bl { color: #007AFF; }
+  .sn-sub { font-size: 10px; color: #AEAEB2; margin-top: 4px; letter-spacing: .06em; }
+  .sn-badge { font-size: 11px; font-weight: 600; color: #007AFF; background: #EAF3FF; padding: 5px 12px; border-radius: 20px; }
+  .sn-sec { margin-bottom: 14px; flex-shrink: 0; }
+  .sn-star { display: none; flex-direction: column; padding: 11px 14px 12px; margin-bottom: 14px; border-radius: 12px; border: 1.5px solid #FFB300; background: #FFF6E0; flex-shrink: 0; }
+  .sn-star.show { display: flex; }
+  .sn-star .ss-top { display: flex; align-items: center; gap: 12px; }
+  .sn-star .ss-ico { width: 38px; height: 38px; border-radius: 50%; background: #FF9F0A; color: #fff; font-size: 20px; line-height: 38px; text-align: center; flex-shrink: 0; }
+  .sn-star .ss-t { font-size: 14px; font-weight: 800; color: #7A4E00; letter-spacing: .06em; text-transform: uppercase; }
+  .sn-star .ss-s { font-size: 9.5px; color: #9A6A00; margin-top: 3px; line-height: 1.45; }
+  .sn-star .ss-reason { display: none; margin-top: 9px; padding: 7px 10px; border-left: 3px solid #FF9F0A; border-radius: 0 6px 6px 0; background: rgba(255,255,255,.8); font-size: 10.5px; line-height: 1.5; color: #5C3B00; }
+  .sn-star .ss-reason.show { display: block; }
+  .sn-star .ss-rl { font-size: 8px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #C08400; margin-bottom: 3px; }
+  .sn-lbl { font-size: 9px; font-weight: 700; color: #007AFF; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 0.5px solid #E5E5EA; }
+  .sn-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+  .sn-fl { font-size: 9px; color: #AEAEB2; font-weight: 500; margin-bottom: 2px; }
+  .sn-fv { font-size: 13px; font-weight: 700; color: #1C1C1E; padding-bottom: 4px; border-bottom: 0.75px solid #E5E5EA; min-height: 20px; }
+  .sn-result { border-radius: 12px; padding: 14px 16px; border: 2px solid #E5E5EA; display: flex; gap: 14px; align-items: flex-start; }
+  .sn-result.r1 { background: rgba(255,59,48,.08);  border-color: #FF3B30; }
+  .sn-result.r2 { background: rgba(255,149,0,.08);  border-color: #FF9500; }
+  .sn-result.r3 { background: rgba(52,199,89,.08);  border-color: #34C759; }
+  .sn-rbadge { flex-shrink: 0; width: 50px; height: 50px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; }
+  .sn-result.r1 .sn-rbadge { background: #FF3B30; }
+  .sn-result.r2 .sn-rbadge { background: #FF9500; }
+  .sn-result.r3 .sn-rbadge { background: #34C759; }
+  .sn-rbadge .rn  { font-size: 24px; font-weight: 800; line-height: 1; }
+  .sn-rbadge .rof { font-size: 8px; opacity: .9; margin-top: 1px; letter-spacing: .03em; }
+  .sn-rbody { flex: 1; }
+  .sn-rtitle { font-size: 14px; font-weight: 800; color: #1C1C1E; margin-bottom: 4px; }
+  .sn-rdesc { font-size: 9.5px; color: #3A3A3C; line-height: 1.45; }
+  .sn-rnone { font-size: 13px; color: #AEAEB2; padding: 6px 0; }
+  .sn-skills-hd { display: grid; grid-template-columns: .72fr 88px 1.48fr; gap: 8px; padding-bottom: 4px; border-bottom: 0.5px solid #E5E5EA; margin-bottom: 2px; }
+  .sn-skills-hd span { font-size: 8px; font-weight: 700; color: #AEAEB2; text-transform: uppercase; letter-spacing: .04em; line-height: 1.35; }
+  .sn-sr { display: grid; grid-template-columns: .72fr 88px 1.48fr; gap: 8px; align-items: start; padding: 6px 0; border-bottom: 0.5px solid #F2F2F7; }
+  .sn-sr:last-child { border-bottom: none; }
+  .sn-sk-name { font-size: 12px; font-weight: 600; color: #1C1C1E; }
+  .sn-stars { font-size: 15px; letter-spacing: 1px; }
+  .sn-cmt { font-size: 10px; line-height: 1.35; color: #636366; border-bottom: 0.5px solid #E5E5EA; min-height: 16px; padding-bottom: 2px; }
+  .sn-norate { font-size: 9.5px; color: #AEAEB2; letter-spacing: .01em; }
+  /* no skill comments written: drop the column and give the width back to the names */
+  .sn.no-cmt .sn-skills-hd, .sn.no-cmt .sn-sr { grid-template-columns: 190px 1fr; }
+  .sn.no-cmt .sn-cmt, .sn.no-cmt #sn-th3 { display: none; }
+  .sn-box { background: #F2F2F7; border-radius: 8px; padding: 9px 12px; font-size: 11.5px; color: #1C1C1E; line-height: 1.55; white-space: pre-wrap; min-height: 38px; }
+  .sn-footer { margin-top: auto; padding-top: 10px; border-top: 0.5px solid #E5E5EA; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+  .sn-ft-school { font-size: 9px; color: #AEAEB2; }
+  .sn-ft-ig { font-size: 9px; font-weight: 600; color: #007AFF; }
+</style>
+
+<div class="card">
+  <div class="header">
+    <div>
+      <div class="brand-line"><span class="brand-black">Seve</span><span class="brand-blue">n</span><span class="brand-black">ine</span></div>
+      <div class="brand-sub">ENGLISH SCHOOL · TASHKENT</div>
+    </div>
+    <div class="report-label" data-i18n="reportLabel"></div>
+  </div>
+
+  <div class="lang-bar">
+    <div class="lang-seg">
+      <button class="lang-btn" data-lang="ru" onclick="applyLang('ru')">RUS</button>
+      <button class="lang-btn" data-lang="uz" onclick="applyLang('uz')">UZB</button>
+      <button class="lang-btn" data-lang="en" onclick="applyLang('en')">ENG</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" data-i18n="about"></div>
+    <div class="info-grid">
+      <div class="field"><div class="field-label" data-i18n="nameLabel"></div><input id="f-name" type="text" data-i18n-ph="namePh"></div>
+      <div class="field"><div class="field-label" data-i18n="groupLabel"></div>
+        <select id="f-group" onchange="refreshSuggestions()"><option value="">—</option><optgroup label="Kids"><option>Kids — Level 1</option><option>Kids — Level 2</option><option>Kids — Level 3</option><option>Kids — Level 4</option></optgroup><optgroup label="Adults"><option>A1 — Beginner</option><option>A2 — Elementary</option><option>B1 — Pre-Intermediate</option><option>B1+ — Intermediate</option><option>B2 — Upper-Intermediate</option><option>C1 — IELTS</option></optgroup></select>
+      </div>
+      <div class="field"><div class="field-label" data-i18n="teacherLabel"></div><input id="f-teacher" type="text" data-i18n-ph="teacherPh"></div>
+      <div class="field"><div class="field-label" data-i18n="periodLabel"></div>
+        <div class="week-selects">
+          <input id="f-week" type="week" data-i18n-title="weekTitle">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" data-i18n="grade"></div>
+    <div class="prep-hint" data-i18n="prepHint"></div>
+    <div class="prep-grid" id="prepGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" data-i18n="award"></div>
+    <button type="button" class="star-toggle" id="starToggle" onclick="toggleStar()">
+      <div class="st-ico">★</div>
+      <div class="st-text">
+        <div class="st-title" data-i18n="starTitle"></div>
+        <div class="st-sub" data-i18n="starHint"></div>
+      </div>
+      <div class="st-check"></div>
+    </button>
+    <div class="star-reason" id="starReason">
+      <div class="sr-label" data-i18n="reasonLabel"></div>
+      <textarea id="f-star-why" class="field-textarea" rows="2" data-i18n-ph="reasonPh"></textarea>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" data-i18n="skills"></div>
+    <div class="tbl-head">
+      <span data-i18n="thSkill"></span>
+      <span data-i18n="thScore"></span>
+      <span data-i18n="thComment"></span>
+    </div>
+    <div class="skills-list" id="skillsList"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" data-i18n="observation"></div>
+    <div class="prep-hint" data-i18n="obsHint"></div>
+    <div class="obs-themes" id="obsThemes"></div>
+    <textarea id="f-obs" class="field-textarea" rows="3" data-i18n-ph="obsPh" onfocus="suggestObsOnFocus()"></textarea>
+    <div class="skill-sugg sugg-below" id="sugg-obs"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-label" data-i18n="tip"></div>
+    <div class="prep-hint" data-i18n="tipHint"></div>
+    <div class="obs-themes" id="tipThemes"></div>
+    <textarea id="f-tip" class="field-textarea" rows="2" data-i18n-ph="tipPh" onfocus="suggestTipOnFocus()"></textarea>
+    <div class="skill-sugg sugg-below" id="sugg-tip"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn-save" id="saveBtn" onclick="saveImage()" data-i18n="saveBtn"></button>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+
+<div id="snapshot">
+  <div class="sn" id="sn-root">
+    <div class="sn-stamp">
+      <svg class="st-seal" viewBox="0 0 268 268" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="sealTop" d="M 24,134 A 110,110 0 0,1 244,134" fill="none"/>
+          <path id="sealBot" d="M 26,134 A 108,108 0 0,0 242,134" fill="none"/>
+        </defs>
+        <g fill="#FF9F0A" stroke="#FF9F0A">
+          <circle cx="134" cy="134" r="130" fill="none" stroke-width="8" stroke-opacity=".17"/>
+          <circle cx="134" cy="134" r="92"  fill="none" stroke-width="2" stroke-opacity=".17"/>
+          <circle cx="20" cy="134" r="3.5" stroke="none" fill-opacity=".26"/>
+          <circle cx="248" cy="134" r="3.5" stroke="none" fill-opacity=".26"/>
+          <polygon stroke="none" fill-opacity=".16"
+            points="134,66 149.9,112.2 198.7,113 159.7,142.3 174,189 134,161 94,189 108.3,142.3 69.3,113 118.1,112.2"/>
+          <g stroke="none" fill-opacity=".3" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+             font-weight="700" font-size="21" letter-spacing="5.5">
+            <text><textPath href="#sealTop" startOffset="50%" text-anchor="middle" dy="15">SEVENINE</textPath></text>
+            <text><textPath href="#sealBot" startOffset="50%" text-anchor="middle" dy="-13">VERIFIED</textPath></text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="sn-hdr">
+      <div>
+        <div class="sn-brand"><span class="nb">Seve</span><span class="bl">n</span><span class="nb">ine</span></div>
+        <div class="sn-sub">ENGLISH SCHOOL · TASHKENT</div>
+      </div>
+      <div class="sn-badge" id="sn-badge"></div>
+    </div>
+    <div class="sn-star" id="sn-star">
+      <div class="ss-top">
+        <div class="ss-ico">★</div>
+        <div>
+          <div class="ss-t" id="sn-star-title"></div>
+          <div class="ss-s" id="sn-star-sub"></div>
+        </div>
+      </div>
+      <div class="ss-reason" id="sn-star-reason">
+        <div class="ss-rl" id="sn-star-rl"></div>
+        <div id="sn-star-why"></div>
+      </div>
+    </div>
+    <div class="sn-sec">
+      <div class="sn-lbl" id="sn-lbl-about"></div>
+      <div class="sn-info-grid">
+        <div><div class="sn-fl" id="sn-fl-name"></div><div class="sn-fv" id="sn-name"></div></div>
+        <div><div class="sn-fl" id="sn-fl-group"></div><div class="sn-fv" id="sn-group"></div></div>
+        <div><div class="sn-fl" id="sn-fl-teacher"></div><div class="sn-fv" id="sn-teacher"></div></div>
+        <div><div class="sn-fl" id="sn-fl-period"></div><div class="sn-fv" id="sn-period"></div></div>
+      </div>
+    </div>
+    <div class="sn-sec">
+      <div class="sn-lbl" id="sn-lbl-grade"></div>
+      <div id="sn-prep"></div>
+    </div>
+    <div class="sn-sec">
+      <div class="sn-lbl" id="sn-lbl-skills"></div>
+      <div class="sn-skills-hd">
+        <span id="sn-th1"></span>
+        <span id="sn-th2"></span>
+        <span id="sn-th3"></span>
+      </div>
+      <div id="sn-skills"></div>
+    </div>
+    <div class="sn-sec">
+      <div class="sn-lbl" id="sn-lbl-obs"></div>
+      <div class="sn-box" id="sn-obs"></div>
+    </div>
+    <div class="sn-sec">
+      <div class="sn-lbl" id="sn-lbl-tip"></div>
+      <div class="sn-box" id="sn-tip"></div>
+    </div>
+    <div class="sn-footer">
+      <div class="sn-ft-school">Sevenine English School · Tashkent</div>
+      <div class="sn-ft-ig">@sevenineuz</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+let lang = 'ru';
+
+const T = {
+  ru: {
+    reportLabel:'Недельный отчёт',
+    about:'Об ученике', grade:'Общая оценка', skills:'Навыки',
+    observation:'Наблюдение учителя', tip:'Совет для дома',
+    nameLabel:'Имя ученика', groupLabel:'Группа', teacherLabel:'Учитель', periodLabel:'Период',
+    namePh:'Имя и фамилия', teacherPh:'Имя учителя',
+    obsPh:'Что особенного заметили на этой неделе?',
+    tipPh:'Одно конкретное действие на эту неделю...',
+    prepHint:'Выберите один уровень — он будет показан родителю как оценка ребёнка.',
+    award:'Награда недели',
+    starTitle:'Отметить как «Звезда недели»',
+    starHint:'Только для отличившихся учеников — бейдж появится в отчёте для родителей.',
+    starBanner:'Звезда недели',
+    starBannerSub:'Эту награду получают лишь несколько учеников: за выдающиеся усилия, дисциплину и заметный прогресс на этой неделе.',
+    reasonLabel:'За что вручена награда — напишите конкретно, чтобы родитель понял',
+    reasonPh:'Например: выучила все 40 новых слов и на каждом уроке помогала одноклассникам.',
+    reasonTitle:'Почему именно ваш ребёнок',
+    thSkill:'Навык', thScore:'Оценка', thComment:'Комментарий',
+    suggFromStars:'Подсказки собираются по выставленным звёздам — сильные и слабые стороны недели.',
+    obsHint:'Выберите, о чём была неделя. Можно добавить несколько формулировок — нажимайте по очереди.',
+    tipHint:'Выберите тему совета. Можно добавить несколько — нажимайте по очереди.',
+    tpSkill:'По навыку', tpHomework:'Домашка', tpVocabulary:'Слова', tpSupport:'Поддержка',
+    thProgress:'Учёба', thHomework:'Домашка', thBehaviour:'Поведение', thVocabulary:'Слова', thMotivation:'Мотивация',
+    groupPlaceholder:'— выбрать —', kids:'Дети', adults:'Взрослые',
+    weekTitle:'Выберите неделю',
+    saveBtn:'Сохранить как изображение', saving:'Сохраняем...', saved:'Сохранено ✓', errPrefix:'Ошибка: ',
+    of3:'из 3', noGrade:'— оценка не выбрана —', dash:'—', notRated:'не оценивалось',
+    months:['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'],
+  },
+  uz: {
+    reportLabel:'Haftalik hisobot',
+    about:"O'quvchi haqida", grade:'Umumiy baho', skills:"Ko'nikmalar",
+    observation:"O'qituvchi kuzatuvi", tip:'Uyga maslahat',
+    nameLabel:"O'quvchi ismi", groupLabel:'Guruh', teacherLabel:"O'qituvchi", periodLabel:'Davr',
+    namePh:'Ism va familiya', teacherPh:"O'qituvchi ismi",
+    obsPh:'Bu hafta nimani alohida sezdingiz?',
+    tipPh:'Shu haftaga bitta aniq harakat...',
+    prepHint:"Bitta darajani tanlang — u ota-onaga bolaning bahosi sifatida ko'rsatiladi.",
+    award:'Hafta mukofoti',
+    starTitle:'«Hafta yulduzi» deb belgilash',
+    starHint:"Faqat alohida ajralib turgan o'quvchilar uchun — nishon ota-onalar hisobotida ko'rinadi.",
+    starBanner:'Hafta yulduzi',
+    starBannerSub:"Bu mukofot faqat bir necha o'quvchiga beriladi: shu haftadagi alohida harakat, intizom va sezilarli yutuq uchun.",
+    reasonLabel:"Mukofot nima uchun berildi — ota-ona tushunishi uchun aniq yozing",
+    reasonPh:"Masalan: 40 ta yangi so'zni to'liq o'rgandi va har darsda sinfdoshlariga yordam berdi.",
+    reasonTitle:'Nega aynan sizning farzandingiz',
+    thSkill:"Ko'nikma", thScore:'Baho', thComment:'Izoh',
+    suggFromStars:"Takliflar qo'yilgan yulduzlar asosida — haftaning kuchli va kuchsiz tomonlari bo'yicha shakllanadi.",
+    obsHint:"Hafta nima haqida bo'lganini tanlang. Bir nechta iborani qo'shish mumkin — navbat bilan bosing.",
+    tipHint:"Maslahat mavzusini tanlang. Bir nechtasini qo'shish mumkin — navbat bilan bosing.",
+    tpSkill:"Ko'nikma bo'yicha", tpHomework:'Uy vazifasi', tpVocabulary:"So'zlar", tpSupport:'Qo\'llab-quvvatlash',
+    thProgress:"O'qish", thHomework:'Uy vazifasi', thBehaviour:'Xulq', thVocabulary:"So'zlar", thMotivation:'Motivatsiya',
+    groupPlaceholder:'— tanlash —', kids:'Bolalar', adults:'Kattalar',
+    weekTitle:'Haftani tanlang',
+    saveBtn:'Rasm sifatida saqlash', saving:'Saqlanmoqda...', saved:'Saqlandi ✓', errPrefix:'Xato: ',
+    of3:'3 dan', noGrade:'— baho tanlanmagan —', dash:'—', notRated:'baholanmadi',
+    months:['yan','fev','mar','apr','may','iyn','iyl','avg','sen','okt','noy','dek'],
+  },
+  en: {
+    reportLabel:'Weekly Report',
+    about:'About the student', grade:'Overall grade', skills:'Skills',
+    observation:"Teacher's observation", tip:'Tip for home',
+    nameLabel:'Student name', groupLabel:'Group', teacherLabel:'Teacher', periodLabel:'Period',
+    namePh:'Full name', teacherPh:'Teacher name',
+    obsPh:'What stood out this week?',
+    tipPh:'One concrete action for this week...',
+    prepHint:"Choose one level — it will be shown to the parent as the child's grade.",
+    award:'Award of the week',
+    starTitle:'Mark as “Star of the Week”',
+    starHint:'Only for outstanding students — the badge appears in the parent report.',
+    starBanner:'Star of the Week',
+    starBannerSub:'Only a few students receive this award: for outstanding effort, discipline and clear progress this week.',
+    reasonLabel:'Why this award was given — be specific so the parent understands',
+    reasonPh:'e.g. learned all 40 new words and helped classmates in every lesson.',
+    reasonTitle:'Why your child earned it',
+    thSkill:'Skill', thScore:'Score', thComment:'Comment',
+    suggFromStars:'Suggestions are built from the stars you gave — the strong and weak sides of the week.',
+    obsHint:'Pick what the week was about. You can add several wordings — tap them one after another.',
+    tipHint:'Pick the kind of advice. You can add several — tap them one after another.',
+    tpSkill:'By skill', tpHomework:'Homework', tpVocabulary:'Words', tpSupport:'Support',
+    thProgress:'Study', thHomework:'Homework', thBehaviour:'Behaviour', thVocabulary:'Words', thMotivation:'Motivation',
+    groupPlaceholder:'— select —', kids:'Kids', adults:'Adults',
+    weekTitle:'Choose a week',
+    saveBtn:'Save as image', saving:'Saving...', saved:'Saved ✓', errPrefix:'Error: ',
+    of3:'of 3', noGrade:'— no grade selected —', dash:'—', notRated:'not assessed',
+    months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  },
+};
+
+const SKILLS = [
+  { ru:'Говорение',       uz:"So'zlashish", en:'Speaking'   },
+  { ru:'Аудирование',     uz:'Tinglash',    en:'Listening'  },
+  { ru:'Чтение',          uz:"O'qish",      en:'Reading'    },
+  { ru:'Письмо',          uz:'Yozish',      en:'Writing'    },
+  { ru:'Грамматика',      uz:'Grammatika',  en:'Grammar'    },
+  { ru:'Словарный запас', uz:"Lug'at",      en:'Vocabulary' },
+];
+
+const OBS_TPL = {
+ "kids1": {
+  "ru": {
+   "high": [
+    "Всё отлично: материал усваивает легко и работает на занятии с интересом. Так держать",
+    "Успеваемость отличная, программу уровня проходит без сложностей",
+    "Хорошо запоминает материал и уверенно использует его на занятии. Сильнее всего — {strong}"
+   ],
+   "good": [
+    "Хорошо справляется с заданиями. Единственное — {weak}, стоит повторить дома",
+    "Материал усваивает, прогресс заметен. Подтянуть стоит {weak}",
+    "В целом всё хорошо, молодец. Сильнее всего идёт {strong}"
+   ],
+   "mid": [
+    "Материал понимает, но до автоматизации в памяти ещё не дошло. Нужно больше повторений",
+    "Старается на занятии, но {weak} пока даётся тяжело. Повторяем дома",
+    "Прогресс есть, но неровный: {strong} идёт хорошо, {weak} отстаёт"
+   ],
+   "low": [
+    "Есть сложности с материалом. Основной пробел — {weak}, с него и начнём",
+    "Материал закрепляется слабо. Без ежедневного повторения дома результата не будет",
+    "Пока держится только {strong}. Остальное нужно повторить с начала"
+   ]
+  },
+  "uz": {
+   "high": [
+    "Hammasi a'lo: materialni oson o'zlashtiradi va mashg'ulotda qiziqish bilan ishlaydi. Shunday davom etsin",
+    "O'zlashtirish a'lo, daraja dasturini qiyinchiliksiz o'tmoqda",
+    "Materialni yaxshi eslab qoladi va mashg'ulotda ishonch bilan ishlatadi. Eng kuchlisi — {strong}"
+   ],
+   "good": [
+    "Topshiriqlarni yaxshi bajaradi. Faqat {weak} — buni uyda takrorlash kerak",
+    "Materialni o'zlashtiradi, o'sish sezilarli. Tortish kerak bo'lgani — {weak}",
+    "Umuman hammasi yaxshi, barakalla. Eng kuchli ketayotgani — {strong}"
+   ],
+   "mid": [
+    "Materialni tushunadi, lekin xotirada avtomatlashuvga yetmadi. Ko'proq takror kerak",
+    "Mashg'ulotda harakat qiladi, lekin {weak} hozircha qiyin. Uyda takrorlaymiz",
+    "O'sish bor, lekin notekis: {strong} yaxshi ketmoqda, {weak} ortda"
+   ],
+   "low": [
+    "Material bilan qiyinchilik bor. Asosiy bo'shliq — {weak}, o'shandan boshlaymiz",
+    "Material yaxshi mustahkamlanmayapti. Uyda har kunlik takrorsiz natija bo'lmaydi",
+    "Hozircha faqat {strong} ushlab turibdi. Qolganini boshidan takrorlash kerak"
+   ]
+  },
+  "en": {
+   "high": [
+    "All excellent: picks the material up easily and works with interest in the session. Keep it up",
+    "Excellent progress, moving through the level's programme without difficulty",
+    "Remembers the material well and uses it confidently in the session. Strongest of all — {strong}"
+   ],
+   "good": [
+    "Handles the tasks well. The one thing — {weak}, worth revising at home",
+    "Is taking the material in and the progress shows. Worth pulling up — {weak}",
+    "On the whole all good, well done. Strongest is {strong}"
+   ],
+   "mid": [
+    "Understands the material, but it has not become automatic in memory yet. Needs more repetition",
+    "Tries in the session, but {weak} is still hard. We revise at home",
+    "There is progress, but it is uneven: {strong} is going well, {weak} lags"
+   ],
+   "low": [
+    "There are difficulties with the material. The main gap is {weak} — that is where we start",
+    "The material is not sticking. Without daily revision at home there will be no result",
+    "Only {strong} is holding up. The rest needs to be redone from the beginning"
+   ]
+  }
+ },
+ "kids2": {
+  "ru": {
+   "high": [
+    "Успеваемость отличная. Хорошо справляется с домашними и классными заданиями",
+    "Материал уровня усваивает уверенно, сложностей с пониманием тем не возникает",
+    "Всё хорошо, молодец. Сильнее всего идёт {strong} — пусть продолжает в том же духе"
+   ],
+   "good": [
+    "В целом всё хорошо. Единственное — {weak}, стоит немного повторить эту тему",
+    "Успеваемость заметно улучшилась, материал запоминает лучше",
+    "Хорошо справляется с заданиями. Подтянуть стоит {weak}"
+   ],
+   "mid": [
+    "Темы понимает, но до полной автоматизации в памяти ещё далеко. Есть пробелы в закреплении",
+    "Старается, но {weak} пока проседает. Нужно больше практики дома",
+    "Прогресс неровный: {strong} идёт уверенно, {weak} требует отдельной работы"
+   ],
+   "low": [
+    "Есть серьёзные сложности с материалом. Основной пробел — {weak}",
+    "Материал не закрепляется: дома учит слабо либо не учит вообще",
+    "Пока держится только {strong}. Остальное нужно проходить заново"
+   ]
+  },
+  "uz": {
+   "high": [
+    "O'zlashtirish a'lo. Uy va sinf topshiriqlarini yaxshi bajaradi",
+    "Daraja materialini ishonch bilan o'zlashtiradi, mavzularni tushunishda qiyinchilik yo'q",
+    "Hammasi yaxshi, barakalla. Eng kuchli ketayotgani — {strong}, shunday davom etsin"
+   ],
+   "good": [
+    "Umuman hammasi yaxshi. Faqat {weak} — bu mavzuni biroz takrorlash kerak",
+    "O'zlashtirish sezilarli yaxshilandi, materialni yaxshiroq eslab qoladi",
+    "Topshiriqlarni yaxshi bajaradi. Tortish kerak bo'lgani — {weak}"
+   ],
+   "mid": [
+    "Mavzularni tushunadi, lekin xotirada to'liq avtomatlashuvga hali uzoq. Mustahkamlashda bo'shliq bor",
+    "Harakat qiladi, lekin {weak} hozircha cho'kmoqda. Uyda ko'proq amaliyot kerak",
+    "O'sish notekis: {strong} ishonchli ketmoqda, {weak} alohida ish talab qiladi"
+   ],
+   "low": [
+    "Material bilan jiddiy qiyinchilik bor. Asosiy bo'shliq — {weak}",
+    "Material mustahkamlanmayapti: uyda kam o'rganadi yoki umuman o'rganmaydi",
+    "Hozircha faqat {strong} ushlab turibdi. Qolganini qaytadan o'tish kerak"
+   ]
+  },
+  "en": {
+   "high": [
+    "Excellent progress. Handles both homework and classwork well",
+    "Takes the level's material in confidently; no difficulty understanding the topics",
+    "All good, well done. Strongest is {strong} — long may it continue"
+   ],
+   "good": [
+    "On the whole all good. The one thing — {weak}, worth revising that topic a little",
+    "Progress has noticeably improved; remembers the material better",
+    "Handles the tasks well. Worth pulling up — {weak}"
+   ],
+   "mid": [
+    "Understands the topics, but full automatic recall is still a way off. There are gaps in consolidation",
+    "Tries, but {weak} is sagging. Needs more practice at home",
+    "Progress is uneven: {strong} is solid, {weak} needs separate work"
+   ],
+   "low": [
+    "There are serious difficulties with the material. The main gap is {weak}",
+    "The material is not consolidating: studies little at home, or not at all",
+    "Only {strong} is holding up. The rest needs to be covered again"
+   ]
+  }
+ },
+ "beg": {
+  "ru": {
+   "high": [
+    "Успеваемость отличная, материал уровня усваивает уверенно",
+    "Хорошо готовится к занятиям и активно работает на уроке. Так держать",
+    "Всё отлично. Сильнее всего идёт {strong}, материал уровня уже даётся легко"
+   ],
+   "good": [
+    "В целом хорошо. Единственное — {weak}, стоит уделить этому больше времени",
+    "Заметен прогресс: слова учит активнее и лучше применяет их в речи",
+    "Справляется хорошо. Подтянуть стоит {weak}"
+   ],
+   "mid": [
+    "Базовое понимание есть, но знания ещё не автоматизированы. Нужен объём практики",
+    "Старается на уроке, но дома работает мало. {weak} из-за этого проседает",
+    "Прогресс есть, но неровный: {strong} идёт уверенно, {weak} отстаёт"
+   ],
+   "low": [
+    "Есть серьёзные сложности с материалом. Основной пробел — {weak}",
+    "Материал не закрепляется: дз выполняет слабо, слова почти не учит",
+    "Пока держится только {strong}. Остальное требует возврата к базе"
+   ]
+  },
+  "uz": {
+   "high": [
+    "O'zlashtirish a'lo, daraja materialini ishonch bilan egallaydi",
+    "Mashg'ulotlarga yaxshi tayyorlanadi va darsda faol ishlaydi. Shunday davom etsin",
+    "Hammasi a'lo. Eng kuchli ketayotgani — {strong}, daraja materiali endi oson kelmoqda"
+   ],
+   "good": [
+    "Umuman yaxshi. Faqat {weak} — bunga ko'proq vaqt ajratish kerak",
+    "O'sish sezilarli: so'zlarni faolroq o'rganadi va nutqda yaxshiroq qo'llaydi",
+    "Yaxshi uddalaydi. Tortish kerak bo'lgani — {weak}"
+   ],
+   "mid": [
+    "Asosiy tushuncha bor, lekin bilimlar hali avtomatlashmagan. Amaliyot hajmi kerak",
+    "Darsda harakat qiladi, lekin uyda kam ishlaydi. {weak} shu sababli cho'kmoqda",
+    "O'sish bor, lekin notekis: {strong} ishonchli ketmoqda, {weak} ortda"
+   ],
+   "low": [
+    "Material bilan jiddiy qiyinchilik bor. Asosiy bo'shliq — {weak}",
+    "Material mustahkamlanmayapti: uy vazifasini kam bajaradi, so'zlarni deyarli o'rganmaydi",
+    "Hozircha faqat {strong} ushlab turibdi. Qolgani asosga qaytishni talab qiladi"
+   ]
+  },
+  "en": {
+   "high": [
+    "Excellent progress; takes the level's material in confidently",
+    "Prepares well for lessons and works actively in class. Keep it up",
+    "All excellent. Strongest is {strong}; the level's material now comes easily"
+   ],
+   "good": [
+    "Good on the whole. The one thing — {weak}, worth giving that more time",
+    "Clear progress: learns the words more actively and applies them better in speech",
+    "Coping well. Worth pulling up — {weak}"
+   ],
+   "mid": [
+    "The basic understanding is there, but the knowledge is not automatic yet. Needs volume of practice",
+    "Tries in class but does little at home. {weak} is sagging because of it",
+    "There is progress, but it is uneven: {strong} is solid, {weak} lags"
+   ],
+   "low": [
+    "There are serious difficulties with the material. The main gap is {weak}",
+    "The material is not consolidating: homework is done poorly, words barely learned",
+    "Only {strong} is holding up. The rest needs a return to basics"
+   ]
+  }
+ },
+ "adv": {
+  "ru": {
+   "high": [
+    "Отличная неделя. Материал уровня усваивает уверенно, ошибок почти нет",
+    "Хорошо справляется с заданиями и активно работает на уроке. Сильнее всего — {strong}",
+    "Успеваемость отличная, к тесту идёт уверенно"
+   ],
+   "good": [
+    "В целом хорошо. Единственное — {weak}, на этом стоит сделать упор",
+    "Заметен прогресс. Подтянуть стоит {weak}, остальное на уровне",
+    "Справляется хорошо, но выучивание слов пока недостаточно качественное чтобы использовать их в практике"
+   ],
+   "mid": [
+    "Базовое понимание есть, но до автоматизации далеко. Есть пробелы в закреплении тем",
+    "На уроке работает, но дома почти не занимается. {weak} из-за этого проседает",
+    "Прогресс неровный: {strong} на уровне, {weak} тянет общий результат вниз"
+   ],
+   "low": [
+    "Есть серьёзные сложности. Основной пробел — {weak}, с него и начнём",
+    "Материал не усваивается: дз практически не выполняет",
+    "Результат ниже своего уровня — вероятно, сказался перерыв в занятиях"
+   ]
+  },
+  "uz": {
+   "high": [
+    "Ajoyib hafta. Daraja materialini ishonch bilan egallaydi, xato deyarli yo'q",
+    "Topshiriqlarni yaxshi bajaradi va darsda faol ishlaydi. Eng kuchlisi — {strong}",
+    "O'zlashtirish a'lo, testga ishonch bilan bormoqda"
+   ],
+   "good": [
+    "Umuman yaxshi. Faqat {weak} — shunga urg'u berish kerak",
+    "O'sish sezilarli. Tortish kerak bo'lgani — {weak}, qolgani daraja darajasida",
+    "Yaxshi uddalaydi, lekin so'zlarni o'rganishi amaliyotda ishlatish uchun hali yetarli sifatli emas"
+   ],
+   "mid": [
+    "Asosiy tushuncha bor, lekin avtomatlashuvga uzoq. Mavzularni mustahkamlashda bo'shliq bor",
+    "Darsda ishlaydi, lekin uyda deyarli shug'ullanmaydi. {weak} shu sababli cho'kmoqda",
+    "O'sish notekis: {strong} darajada, {weak} umumiy natijani pastga tortmoqda"
+   ],
+   "low": [
+    "Jiddiy qiyinchilik bor. Asosiy bo'shliq — {weak}, o'shandan boshlaymiz",
+    "Material o'zlashmayapti: uy vazifasini deyarli bajarmaydi",
+    "Natija o'z darajasidan past — ehtimol mashg'ulotlardagi tanaffus ta'sir qilgan"
+   ]
+  },
+  "en": {
+   "high": [
+    "An excellent week. Takes the level's material in confidently, almost no mistakes",
+    "Handles the tasks well and works actively in class. Strongest of all — {strong}",
+    "Excellent progress; heading towards the test with confidence"
+   ],
+   "good": [
+    "Good on the whole. The one thing — {weak}, worth making that the focus",
+    "Clear progress. Worth pulling up — {weak}; the rest is at level",
+    "Coping well, but the way the words are learned is not yet good enough to use them in practice"
+   ],
+   "mid": [
+    "The basic understanding is there, but automatic use is far off. There are gaps in consolidating the topics",
+    "Works in class but does almost nothing at home. {weak} is sagging because of it",
+    "Progress is uneven: {strong} is at level, {weak} is pulling the overall result down"
+   ],
+   "low": [
+    "There are serious difficulties. The main gap is {weak} — that is where we start",
+    "The material is not being absorbed: homework is practically not done",
+    "The result is below their own level — most likely the break in lessons has told"
+   ]
+  }
+ }
+};
+
+const TIP_THEMES = {
+ "kids1": {
+  "homework": {
+   "ru": [
+    "Проверять выполнение домашнего задания каждый день, хотя бы 10 минут",
+    "Садиться за задание в одно и то же время — так формируется привычка",
+    "Не делать задание за ребёнка: лучше меньше, но самостоятельно"
+   ],
+   "uz": [
+    "Uy vazifasi bajarilganini har kuni, hech bo'lmasa 10 daqiqa tekshirish",
+    "Topshiriqqa har kuni bir xil vaqtda o'tirish — shunda odat shakllanadi",
+    "Vazifani bola o'rniga bajarmaslik: kamroq, lekin mustaqil bo'lgani yaxshi"
+   ],
+   "en": [
+    "Check the homework every day, even if only for ten minutes",
+    "Sit down to it at the same time each day — that is how the habit forms",
+    "Do not do the task for them: less, but done alone, is better"
+   ]
+  },
+  "vocabulary": {
+   "ru": [
+    "Повторять слова недели по 5-10 минут каждый день",
+    "Проговаривать слова вслух, а не только читать глазами",
+    "Спрашивать слова в течение недели, а не только перед проверкой"
+   ],
+   "uz": [
+    "Hafta so'zlarini har kuni 5-10 daqiqa takrorlash",
+    "So'zlarni faqat ko'z bilan o'qimay, ovoz chiqarib aytish",
+    "So'zlarni tekshiruv oldidan emas, hafta davomida so'rab turish"
+   ],
+   "en": [
+    "Revise the week's words for five to ten minutes every day",
+    "Say the words out loud, not just read them with the eyes",
+    "Ask the words through the week, not only before the check"
+   ]
+  },
+  "support": {
+   "ru": [
+    "Хвалить за старание, а не только за результат — в этом возрасте это важнее",
+    "Спрашивать, что понравилось на занятии, чтобы поддержать интерес",
+    "Не сравнивать с другими детьми — это снижает желание заниматься"
+   ],
+   "uz": [
+    "Natija uchun emas, harakat uchun maqtash — bu yoshda shunisi muhimroq",
+    "Qiziqishni saqlash uchun mashg'ulotda nima yoqqanini so'rab turish",
+    "Boshqa bolalar bilan solishtirmaslik — bu shug'ullanish istagini pasaytiradi"
+   ],
+   "en": [
+    "Praise the effort, not just the result — at this age that matters more",
+    "Ask what they enjoyed in the session, to keep the interest alive",
+    "Do not compare them with other children — it lowers the will to study"
+   ]
+  }
+ },
+ "kids2": {
+  "homework": {
+   "ru": [
+    "Проверять дз каждый день и следить, чтобы задания были выполнены полностью",
+    "Завести постоянное время для домашней работы — без этого материал не закрепится",
+    "Просить пересказать, что было на уроке — так видно, что усвоено"
+   ],
+   "uz": [
+    "Uy vazifasini har kuni tekshirish va to'liq bajarilishini kuzatish",
+    "Uy ishi uchun doimiy vaqt belgilash — usiz material mustahkamlanmaydi",
+    "Darsda nima bo'lganini gapirib berishni so'rash — shunda nima o'zlashgani ko'rinadi"
+   ],
+   "en": [
+    "Check the homework daily and see that the tasks are finished in full",
+    "Set a fixed time for homework — without it the material will not stick",
+    "Ask them to retell the lesson — that shows what has actually landed"
+   ]
+  },
+  "vocabulary": {
+   "ru": [
+    "Учить слова к пятнице понемногу каждый день, а не всё за один вечер",
+    "Проверять слова дома вслух — узнавать глазами недостаточно",
+    "Просить составить с новым словом своё предложение"
+   ],
+   "uz": [
+    "Juma uchun so'zlarni bir kechada emas, har kuni ozdan o'rganish",
+    "So'zlarni uyda ovoz chiqarib tekshirish — ko'z bilan tanish yetarli emas",
+    "Yangi so'z bilan o'z gapini tuzishni so'rash"
+   ],
+   "en": [
+    "Learn the Friday words a few each day, not all in one evening",
+    "Test the words aloud at home — recognising them by eye is not enough",
+    "Ask them to make their own sentence with a new word"
+   ]
+  },
+  "support": {
+   "ru": [
+    "Поддержать и дать дополнительную мотивацию, чтобы сохранить интерес к занятиям",
+    "Отмечать даже небольшой прогресс — это заметно поднимает мотивацию",
+    "Обсудить, что именно даётся тяжело, и снять давление с этой темы"
+   ],
+   "uz": [
+    "Mashg'ulotlarga qiziqishni saqlash uchun qo'llab-quvvatlash va qo'shimcha motivatsiya berish",
+    "Kichik o'sishni ham nishonlash — bu motivatsiyani sezilarli ko'taradi",
+    "Aynan nima qiyinligini muhokama qilib, o'sha mavzudagi bosimni olib tashlash"
+   ],
+   "en": [
+    "Support them and add some extra motivation, to keep the interest in lessons",
+    "Mark even small progress — it lifts motivation noticeably",
+    "Talk about what exactly feels hard, and take the pressure off that topic"
+   ]
+  }
+ },
+ "beg": {
+  "homework": {
+   "ru": [
+    "Выделять на домашнюю работу не менее 2 часов в день, а не делать всё перед уроком",
+    "Выполнять задания в день урока, пока материал свежий",
+    "Не пропускать письменные задания — на уроке их не наверстать"
+   ],
+   "uz": [
+    "Uy vazifasiga kuniga kamida 2 soat ajratish, hammasini dars oldidan qilmaslik",
+    "Topshiriqlarni material yangiligida, dars kuni bajarish",
+    "Yozma topshiriqlarni o'tkazib yubormaslik — ularni darsda to'ldirib bo'lmaydi"
+   ],
+   "en": [
+    "Set aside at least two hours a day for homework, rather than doing it all before the lesson",
+    "Do the tasks on the day of the lesson, while the material is fresh",
+    "Do not skip the written tasks — they cannot be made up in class"
+   ]
+  },
+  "vocabulary": {
+   "ru": [
+    "Учить слова до автоматизма: узнавать недостаточно, нужно использовать",
+    "Повторять слова по 10-15 минут ежедневно, удобнее в приложении",
+    "Применять новые слова в разговоре дома — хотя бы по три в день"
+   ],
+   "uz": [
+    "So'zlarni avtomatizmgacha o'rganish: tanish yetarli emas, ishlatish kerak",
+    "So'zlarni har kuni 10-15 daqiqa takrorlash, ilovada qulayroq",
+    "Yangi so'zlarni uyda suhbatda ishlatish — hech bo'lmasa kuniga uchtadan"
+   ],
+   "en": [
+    "Learn the words to the point of automatic use: recognising is not enough",
+    "Revise for ten to fifteen minutes daily, easiest in an app",
+    "Use the new words in conversation at home — at least three a day"
+   ]
+  },
+  "support": {
+   "ru": [
+    "Договориться о небольшой понятной цели на месяц — так проще держать темп",
+    "Отмечать прогресс вслух: на этом уровне он не всегда заметен самому",
+    "Поддержать после перерыва — вернуть режим важнее, чем нагнать материал"
+   ],
+   "uz": [
+    "Bir oyga kichik va aniq maqsad kelishib olish — shunda sur'atni ushlash osonroq",
+    "O'sishni ovoz chiqarib nishonlash: bu darajada u o'ziga har doim ham sezilmaydi",
+    "Tanaffusdan keyin qo'llab-quvvatlash — tartibni tiklash materialni quvishdan muhimroq"
+   ],
+   "en": [
+    "Agree one small, clear goal for the month — it makes the pace easier to hold",
+    "Name the progress out loud: at this level it is not always visible to them",
+    "Support them after a break — restoring the routine matters more than catching up"
+   ]
+  }
+ },
+ "adv": {
+  "homework": {
+   "ru": [
+    "Отводить на дз не менее 2 часов в день, не откладывая на день перед занятием",
+    "Разбирать ошибки в проверенном дз, а не просто смотреть на оценку",
+    "Сдавать письменные работы регулярно — без них к тесту не подготовиться"
+   ],
+   "uz": [
+    "Uy vazifasiga kuniga kamida 2 soat ajratish, mashg'ulot oldingi kuniga qoldirmaslik",
+    "Tekshirilgan uy vazifasidagi xatolarni tahlil qilish, faqat bahoga qaramaslik",
+    "Yozma ishlarni muntazam topshirish — ularsiz testga tayyorlanib bo'lmaydi"
+   ],
+   "en": [
+    "Give homework at least two hours a day, not leaving it to the day before the lesson",
+    "Go through the mistakes in the marked homework, rather than just looking at the score",
+    "Hand written work in regularly — there is no preparing for the test without it"
+   ]
+  },
+  "vocabulary": {
+   "ru": [
+    "Учить лексику коллокациями и сразу применять её в спикинг ответах",
+    "Использовать пять новых слов в каждой письменной работе",
+    "Повторять слова регулярно, а не перед самой проверкой"
+   ],
+   "uz": [
+    "Lug'atni kollokatsiya bilan o'rganish va darrov spiking javoblarida qo'llash",
+    "Har bir yozma ishda beshta yangi so'zni ishlatish",
+    "So'zlarni tekshiruv oldidan emas, muntazam takrorlash"
+   ],
+   "en": [
+    "Learn vocabulary as collocations and use it in speaking answers straight away",
+    "Use five new words in every written task",
+    "Revise the words regularly rather than right before the check"
+   ]
+  },
+  "support": {
+   "ru": [
+    "Обозначить конкретную дату теста — цель заметно поднимает мотивацию",
+    "Рекомендую зарегистрироваться на тест: появится больше мотивации готовиться",
+    "Разобрать вместе, что мешает заниматься дома, и снять эту причину"
+   ],
+   "uz": [
+    "Aniq test sanasini belgilash — maqsad motivatsiyani sezilarli ko'taradi",
+    "Testga ro'yxatdan o'tishni tavsiya qilaman: tayyorlanishga motivatsiya ortadi",
+    "Uyda shug'ullanishga nima xalaqit berayotganini birga tahlil qilib, sababni olib tashlash"
+   ],
+   "en": [
+    "Fix a concrete test date — a goal lifts motivation noticeably",
+    "I recommend registering for the test: the motivation to prepare will follow",
+    "Work out together what is getting in the way of studying at home, and remove it"
+   ]
+  }
+ }
+};
+
+const OBS_THEMES = {
+ "kids1": {
+  "ru": {
+   "homework": {
+    "good": [
+     "Домашние задания выполняет вовремя и полностью. Молодец",
+     "Дома занимается регулярно, и это сразу видно на занятии"
+    ],
+    "bad": [
+     "Домашние задания дома почти не выполняются. Без этого материал не закрепится",
+     "Дома учит слабо либо не учит вообще, а на занятии старается"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "На занятии работает активно и внимательно слушает",
+     "Хорошо включается в работу и не отвлекается"
+    ],
+    "bad": [
+     "Часто отвлекается на занятии, внимание удерживает недолго",
+     "На занятии отвлекается и мешает работать другим"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Слова недели знает наизусть и использует их правильно",
+     "Слова учит регулярно, запас растёт от недели к неделе"
+    ],
+    "bad": [
+     "Слова дома почти не учит, к следующему занятию забывает",
+     "Слова недели знает не все, список нужно повторять каждый день"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "На занятия ходит с интересом, в работу включается охотно",
+     "Интерес к английскому заметный, это видно по работе на занятии"
+    ],
+    "bad": [
+     "Интерес к занятиям снизился, в работу включается неохотно",
+     "Часто говорит что не хочется заниматься. Важно поддержать и вернуть интерес"
+    ]
+   }
+  },
+  "uz": {
+   "homework": {
+    "good": [
+     "Uy vazifalarini o'z vaqtida va to'liq bajaradi. Barakalla",
+     "Uyda muntazam shug'ullanadi va bu mashg'ulotda darrov ko'rinadi"
+    ],
+    "bad": [
+     "Uy vazifalari uyda deyarli bajarilmayapti. Usiz material mustahkamlanmaydi",
+     "Uyda kam o'rganadi yoki umuman o'rganmaydi, mashg'ulotda esa harakat qiladi"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Mashg'ulotda faol ishlaydi va diqqat bilan tinglaydi",
+     "Ishga yaxshi qo'shiladi va chalg'imaydi"
+    ],
+    "bad": [
+     "Mashg'ulotda tez-tez chalg'iydi, diqqatini uzoq ushlay olmaydi",
+     "Mashg'ulotda chalg'iydi va boshqalarga ishlashga xalaqit beradi"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Hafta so'zlarini yoddan biladi va to'g'ri ishlatadi",
+     "So'zlarni muntazam o'rganadi, zaxira haftadan haftaga o'smoqda"
+    ],
+    "bad": [
+     "So'zlarni uyda deyarli o'rganmaydi, keyingi mashg'ulotga unutadi",
+     "Hafta so'zlarining hammasini bilmaydi, ro'yxatni har kuni takrorlash kerak"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Mashg'ulotlarga qiziqish bilan keladi, ishga bajonidil qo'shiladi",
+     "Ingliz tiliga qiziqishi sezilarli, bu mashg'ulotdagi ishidan ko'rinadi"
+    ],
+    "bad": [
+     "Mashg'ulotlarga qiziqish pasaydi, ishga istamay qo'shiladi",
+     "Tez-tez shug'ullangisi kelmasligini aytadi. Qo'llab-quvvatlab, qiziqishni qaytarish muhim"
+    ]
+   }
+  },
+  "en": {
+   "homework": {
+    "good": [
+     "Does the homework on time and in full. Well done",
+     "Works regularly at home, and it shows in the session straight away"
+    ],
+    "bad": [
+     "The homework is barely being done at home. Without it the material will not stick",
+     "Studies little at home, or not at all, though tries in the session"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Works actively in the session and listens attentively",
+     "Joins the work well and does not get distracted"
+    ],
+    "bad": [
+     "Gets distracted often in the session; does not hold attention long",
+     "Gets distracted and stops the others working"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Knows the week's words by heart and uses them correctly",
+     "Learns the words regularly; the stock grows week by week"
+    ],
+    "bad": [
+     "Barely learns the words at home; forgets them by the next session",
+     "Does not know all of the week's words; the list needs revising every day"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Comes to the sessions with interest and joins in willingly",
+     "The interest in English is clear, and it shows in the work"
+    ],
+    "bad": [
+     "Interest in the sessions has dropped; joins the work reluctantly",
+     "Often says they do not feel like studying. Worth supporting them to bring the interest back"
+    ]
+   }
+  }
+ },
+ "kids2": {
+  "ru": {
+   "homework": {
+    "good": [
+     "Вовремя выполняет домашние задания и хорошо учится",
+     "Дз выполняет полностью, к занятиям готовится"
+    ],
+    "bad": [
+     "В выполнении домашних работ сильно отстаёт от одногруппников",
+     "Дз выполняет слабо, можно сказать что практически не выполняет"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "На уроке работает активно, внимание держит весь урок",
+     "Ведёт себя хорошо и не отвлекается от заданий"
+    ],
+    "bad": [
+     "Часто отвлекается на уроке и болтает на посторонние темы",
+     "В последнее время на уроках отвлекается, из-за этого теряем время"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Слова на пятницу знает отлично, использует их в речи",
+     "Внимательно относится к изучению новых слов, запас увеличивается"
+    ],
+    "bad": [
+     "Слова учит слабо, из-за этого страдает и говорение",
+     "К словам относится невнимательно, к следующему уроку забывает"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Учится с интересом, задания выполняет охотно",
+     "Мотивация хорошая, к занятиям относится ответственно"
+    ],
+    "bad": [
+     "Всё выполняет и справляется, но часто говорит что не хочется учиться. Важно поддержать и дать дополнительную мотивацию",
+     "Заметно снизился интерес к занятиям. Важно помочь вернуть интерес к учёбе"
+    ]
+   }
+  },
+  "uz": {
+   "homework": {
+    "good": [
+     "Uy vazifalarini o'z vaqtida bajaradi va yaxshi o'qiydi",
+     "Uy vazifasini to'liq bajaradi, darslarga tayyorlanadi"
+    ],
+    "bad": [
+     "Uy ishlarini bajarishda guruhdoshlaridan ancha ortda",
+     "Uy vazifasini kam bajaradi, deyarli bajarmaydi desa ham bo'ladi"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Darsda faol ishlaydi, diqqatini butun dars davomida ushlaydi",
+     "O'zini yaxshi tutadi va topshiriqlardan chalg'imaydi"
+    ],
+    "bad": [
+     "Darsda tez-tez chalg'iydi va begona mavzularda gaplashadi",
+     "So'nggi paytlarda darslarda chalg'iydi, shu sababli vaqt yo'qotamiz"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Juma so'zlarini a'lo biladi, ularni nutqda ishlatadi",
+     "Yangi so'zlarni o'rganishga diqqat bilan yondashadi, zaxira ortmoqda"
+    ],
+    "bad": [
+     "So'zlarni kam o'rganadi, shu sababli so'zlashish ham zarar ko'radi",
+     "So'zlarga e'tiborsiz, keyingi darsga unutadi"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Qiziqish bilan o'qiydi, topshiriqlarni bajonidil bajaradi",
+     "Motivatsiyasi yaxshi, mashg'ulotlarga mas'uliyat bilan qaraydi"
+    ],
+    "bad": [
+     "Hammasini bajaradi va uddalaydi, lekin tez-tez o'qigisi kelmasligini aytadi. Qo'llab-quvvatlash va qo'shimcha motivatsiya berish muhim",
+     "Mashg'ulotlarga qiziqish sezilarli pasaydi. O'qishga qiziqishni qaytarishga yordam berish muhim"
+    ]
+   }
+  },
+  "en": {
+   "homework": {
+    "good": [
+     "Does the homework on time and studies well",
+     "Completes the homework in full and prepares for lessons"
+    ],
+    "bad": [
+     "Falls well behind their groupmates on homework",
+     "Does the homework poorly — you could say practically not at all"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Works actively in class and holds attention for the whole lesson",
+     "Behaves well and does not get distracted from the tasks"
+    ],
+    "bad": [
+     "Gets distracted often in class and chats about unrelated things",
+     "Has been distracted in lessons lately, and we lose time because of it"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Knows the Friday words excellently and uses them in speech",
+     "Takes learning new words seriously; the stock is increasing"
+    ],
+    "bad": [
+     "Learns the words poorly, and speaking suffers as a result",
+     "Is careless about the words and forgets them by the next lesson"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Studies with interest and does the tasks willingly",
+     "Motivation is good; takes the lessons seriously"
+    ],
+    "bad": [
+     "Does everything and copes, but often says they do not feel like studying. Worth supporting them with extra motivation",
+     "Interest in the lessons has clearly dropped. Worth helping bring that interest back"
+    ]
+   }
+  }
+ },
+ "beg": {
+  "ru": {
+   "homework": {
+    "good": [
+     "Домашние задания выполняет регулярно, это заметно по результату",
+     "К занятиям готовится, дз сдаёт вовремя"
+    ],
+    "bad": [
+     "Дз выполняет нерегулярно, из-за этого материал не закрепляется",
+     "Дома почти не занимается — на уроке этого не наверстать"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "На уроке работает активно и включается во все задания",
+     "Внимание держит весь урок, в работу включается сразу"
+    ],
+    "bad": [
+     "Часто отвлекается на телефон, из-за этого теряем время урока",
+     "На уроке работает пассивно, инициативы не проявляет"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Слова на пятницу знает отлично и применяет их в речи",
+     "Активно учит слова и готовится к уроку. Так держать"
+    ],
+    "bad": [
+     "Слова почти не учит, из-за этого материал усваивать сложнее",
+     "Слова узнаёт, но в речи не использует — учить нужно до автоматизма"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "К занятиям относится ответственно, видна личная заинтересованность",
+     "Мотивация высокая, занимается с интересом"
+    ],
+    "bad": [
+     "После перерыва работает заметно пассивнее, чем раньше",
+     "Интерес к занятиям снизился, нужна поддержка дома"
+    ]
+   }
+  },
+  "uz": {
+   "homework": {
+    "good": [
+     "Uy vazifalarini muntazam bajaradi, bu natijada sezilib turibdi",
+     "Darslarga tayyorlanadi, uy vazifasini o'z vaqtida topshiradi"
+    ],
+    "bad": [
+     "Uy vazifasini nomuntazam bajaradi, shu sababli material mustahkamlanmaydi",
+     "Uyda deyarli shug'ullanmaydi — buni darsda to'ldirib bo'lmaydi"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Darsda faol ishlaydi va barcha topshiriqlarga qo'shiladi",
+     "Diqqatini butun dars ushlaydi, ishga darrov qo'shiladi"
+    ],
+    "bad": [
+     "Tez-tez telefonga chalg'iydi, shu sababli dars vaqtini yo'qotamiz",
+     "Darsda passiv ishlaydi, tashabbus ko'rsatmaydi"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Juma so'zlarini a'lo biladi va ularni nutqda qo'llaydi",
+     "So'zlarni faol o'rganadi va darsga tayyorlanadi. Shunday davom etsin"
+    ],
+    "bad": [
+     "So'zlarni deyarli o'rganmaydi, shu sababli materialni o'zlashtirish qiyinroq",
+     "So'zlarni taniydi, lekin nutqda ishlatmaydi — avtomatizmgacha o'rganish kerak"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Mashg'ulotlarga mas'uliyat bilan qaraydi, shaxsiy qiziqish ko'rinib turibdi",
+     "Motivatsiyasi yuqori, qiziqish bilan shug'ullanadi"
+    ],
+    "bad": [
+     "Tanaffusdan keyin avvalgidan sezilarli passivroq ishlaydi",
+     "Mashg'ulotlarga qiziqish pasaydi, uyda qo'llab-quvvatlash kerak"
+    ]
+   }
+  },
+  "en": {
+   "homework": {
+    "good": [
+     "Does the homework regularly, and the result shows it",
+     "Prepares for lessons and hands the homework in on time"
+    ],
+    "bad": [
+     "Does the homework irregularly, so the material does not consolidate",
+     "Does almost nothing at home — that cannot be made up in class"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Works actively in class and joins in every task",
+     "Holds attention for the whole lesson and gets into the work at once"
+    ],
+    "bad": [
+     "Gets distracted by the phone often, and we lose lesson time because of it",
+     "Works passively in class and shows no initiative"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Knows the Friday words excellently and applies them in speech",
+     "Learns the words actively and prepares for the lesson. Keep it up"
+    ],
+    "bad": [
+     "Barely learns the words, which makes the material harder to take in",
+     "Recognises the words but does not use them in speech — they need learning to the point of automatic use"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Takes the lessons seriously; the personal interest is visible",
+     "Motivation is high; studies with interest"
+    ],
+    "bad": [
+     "Works noticeably more passively since the break",
+     "Interest in the lessons has dropped; support at home is needed"
+    ]
+   }
+  }
+ },
+ "adv": {
+  "ru": {
+   "homework": {
+    "good": [
+     "Дз выполняет полностью и вовремя, к тесту готовится системно",
+     "Домашние работы сдаёт регулярно, видна самостоятельная работа"
+    ],
+    "bad": [
+     "Дз практически не выполняет, а на этом уровне без него прогресса не будет",
+     "В выполнении домашних работ сильно отстаёт от одногруппников"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "На уроке работает активно, участвует в обсуждениях",
+     "Включается в работу сразу и держит темп весь урок"
+    ],
+    "bad": [
+     "Часто отвлекается на телефон и не сдаёт его по просьбе учителя",
+     "На уроке занимается своими делами, открывает ноутбук не по заданию"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Слова на пятницу знает отлично и применяет их в спикинг ответах",
+     "Лексику учит системно, использует её и в речи, и в сочинениях"
+    ],
+    "bad": [
+     "Выучивание слов недостаточно качественное чтобы использовать их в практике",
+     "Слова учит перед проверкой и быстро забывает — до автоматизации не доходит"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "К цели идёт осознанно, занимается системно",
+     "Мотивация высокая — видно, что готовится к тесту целенаправленно"
+    ],
+    "bad": [
+     "После перерыва работает заметно пассивнее, чем раньше",
+     "Интерес к занятиям снизился, а до теста времени немного"
+    ]
+   }
+  },
+  "uz": {
+   "homework": {
+    "good": [
+     "Uy vazifasini to'liq va o'z vaqtida bajaradi, testga tizimli tayyorlanadi",
+     "Uy ishlarini muntazam topshiradi, mustaqil ish ko'rinib turibdi"
+    ],
+    "bad": [
+     "Uy vazifasini deyarli bajarmaydi, bu darajada esa usiz o'sish bo'lmaydi",
+     "Uy ishlarini bajarishda guruhdoshlaridan ancha ortda"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Darsda faol ishlaydi, muhokamalarda qatnashadi",
+     "Ishga darrov qo'shiladi va butun dars sur'atni ushlaydi"
+    ],
+    "bad": [
+     "Tez-tez telefonga chalg'iydi va o'qituvchi so'raganda topshirmaydi",
+     "Darsda o'z ishi bilan shug'ullanadi, topshiriqqa aloqasiz noutbuk ochadi"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Juma so'zlarini a'lo biladi va ularni spiking javoblarida qo'llaydi",
+     "Lug'atni tizimli o'rganadi, uni nutqda ham, insholarda ham ishlatadi"
+    ],
+    "bad": [
+     "So'zlarni o'rganishi amaliyotda ishlatish uchun yetarli sifatli emas",
+     "So'zlarni tekshiruvdan oldin o'rganadi va tez unutadi — avtomatlashuvga yetmaydi"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Maqsad sari ongli boradi, tizimli shug'ullanadi",
+     "Motivatsiyasi yuqori — testga maqsadli tayyorlanayotgani ko'rinib turibdi"
+    ],
+    "bad": [
+     "Tanaffusdan keyin avvalgidan sezilarli passivroq ishlaydi",
+     "Mashg'ulotlarga qiziqish pasaydi, testgacha esa vaqt kam"
+    ]
+   }
+  },
+  "en": {
+   "homework": {
+    "good": [
+     "Completes the homework fully and on time; prepares for the test systematically",
+     "Hands the written work in regularly; the independent study shows"
+    ],
+    "bad": [
+     "Practically does not do the homework, and at this level there is no progress without it",
+     "Falls well behind their groupmates on homework"
+    ]
+   },
+   "behaviour": {
+    "good": [
+     "Works actively in class and takes part in the discussions",
+     "Gets into the work at once and holds the pace all lesson"
+    ],
+    "bad": [
+     "Gets distracted by the phone often and does not hand it in when asked",
+     "Does their own thing in class and opens a laptop unrelated to the task"
+    ]
+   },
+   "vocabulary": {
+    "good": [
+     "Knows the Friday words excellently and applies them in speaking answers",
+     "Learns the vocabulary systematically and uses it in both speech and essays"
+    ],
+    "bad": [
+     "The way the words are learned is not good enough to use them in practice",
+     "Learns the words just before the check and forgets them quickly — never reaching automatic use"
+    ]
+   },
+   "motivation": {
+    "good": [
+     "Moves towards the goal deliberately and studies systematically",
+     "Motivation is high — clearly preparing for the test with purpose"
+    ],
+    "bad": [
+     "Works noticeably more passively since the break",
+     "Interest in the lessons has dropped, and there is not much time before the test"
+    ]
+   }
+  }
+ }
+};
+
+const OBS_FLAT = {
+ "beg": {
+  "ru": {
+   "high": [
+    "Сильная ровная неделя: все навыки на одном высоком уровне.",
+    "Провалов нет ни в одном направлении. Материал уровня освоен."
+   ],
+   "good": [
+    "Хорошая ровная неделя, навыки идут равномерно.",
+    "Результат одинаковый по всем направлениям — система работает."
+   ],
+   "mid": [
+    "Неделя ровная, все навыки на одном уровне. Не хватает самостоятельной работы.",
+    "Резких сильных и слабых сторон нет. Нужен объём практики."
+   ],
+   "low": [
+    "Неделя тяжёлая: трудности во всех навыках сразу. Возвращаемся к базе.",
+    "Просадка равномерная. Без ежедневной практики уровень стоит."
+   ]
+  },
+  "uz": {
+   "high": [
+    "Kuchli, bir tekis hafta: barcha ko'nikmalar bir xil yuqori darajada.",
+    "Hech bir yo'nalishda pasayish yo'q. Daraja materiali o'zlashtirildi."
+   ],
+   "good": [
+    "Yaxshi, bir tekis hafta, ko'nikmalar bir maromda ketmoqda.",
+    "Natija barcha yo'nalishda bir xil — tizim ishlayapti."
+   ],
+   "mid": [
+    "Hafta bir tekis, barcha ko'nikmalar bir darajada. Mustaqil ish yetishmaydi.",
+    "Keskin kuchli yoki kuchsiz tomon yo'q. Amaliyot hajmi kerak."
+   ],
+   "low": [
+    "Hafta og'ir: qiyinchilik barcha ko'nikmalarda bir vaqtda. Asosga qaytamiz.",
+    "Pasayish bir tekis. Kunlik amaliyotsiz daraja joyida turadi."
+   ]
+  },
+  "en": {
+   "high": [
+    "A strong, even week: every skill at the same high level.",
+    "No weak spot in any area. The level's material is mastered."
+   ],
+   "good": [
+    "A good, even week, with the skills moving at the same rate.",
+    "The same result across every area — the system is working."
+   ],
+   "mid": [
+    "An even week, every skill at the same level. Independent work is what is missing.",
+    "No sharp strengths or weaknesses. Practice volume is needed."
+   ],
+   "low": [
+    "A hard week: difficulties in every skill at once. We go back to basics.",
+    "The drop is even. Without daily practice the level stands still."
+   ]
+  }
+ },
+ "adv": {
+  "ru": {
+   "high": [
+    "Сильная ровная неделя: все навыки на одном высоком уровне.",
+    "Слабых мест нет. Можно работать на целевой балл."
+   ],
+   "good": [
+    "Хорошая ровная неделя, навыки идут равномерно.",
+    "Результат одинаковый по всем направлениям — балл держится ровно."
+   ],
+   "mid": [
+    "Неделя ровная, все навыки на одном уровне. Не хватает самостоятельной практики.",
+    "Резких сильных и слабых сторон нет. Для роста нужен объём."
+   ],
+   "low": [
+    "Неделя слабая по всем направлениям сразу — вероятен откат из-за перерыва.",
+    "Просадка равномерная. Нужно восстанавливать режим занятий."
+   ]
+  },
+  "uz": {
+   "high": [
+    "Kuchli, bir tekis hafta: barcha ko'nikmalar bir xil yuqori darajada.",
+    "Zaif joy yo'q. Maqsadli ball ustida ishlash mumkin."
+   ],
+   "good": [
+    "Yaxshi, bir tekis hafta, ko'nikmalar bir maromda ketmoqda.",
+    "Natija barcha yo'nalishda bir xil — ball bir tekis turibdi."
+   ],
+   "mid": [
+    "Hafta bir tekis, barcha ko'nikmalar bir darajada. Mustaqil amaliyot yetishmaydi.",
+    "Keskin kuchli yoki kuchsiz tomon yo'q. O'sish uchun hajm kerak."
+   ],
+   "low": [
+    "Hafta barcha yo'nalishda kuchsiz — tanaffus sabab orqaga qaytish ehtimoli bor.",
+    "Pasayish bir tekis. Mashg'ulot tartibini tiklash kerak."
+   ]
+  },
+  "en": {
+   "high": [
+    "A strong, even week: every skill at the same high level.",
+    "No weak points. We can work towards the target band."
+   ],
+   "good": [
+    "A good, even week, with the skills moving at the same rate.",
+    "The same result across every area — the band is holding steady."
+   ],
+   "mid": [
+    "An even week, every skill at the same level. Independent practice is what is missing.",
+    "No sharp strengths or weaknesses. Growth needs volume."
+   ],
+   "low": [
+    "A weak week across every area at once — likely a slip after a break.",
+    "The drop is even. The study routine needs rebuilding."
+   ]
+  }
+ },
+ "kids2": {
+  "ru": {
+   "high": [
+    "Сильная ровная неделя: все навыки на одном высоком уровне.",
+    "Провалов нет ни в одном направлении. Пора добавлять сложность."
+   ],
+   "good": [
+    "Хорошая ровная неделя, навыки развиваются равномерно.",
+    "Результат одинаковый по всем направлениям — база собрана."
+   ],
+   "mid": [
+    "Неделя ровная, все навыки на одном уровне. Не хватает объёма практики.",
+    "Резких сильных и слабых сторон нет. Работаем над регулярностью."
+   ],
+   "low": [
+    "Неделя тяжёлая: трудности во всех навыках сразу. Нужен возврат к базе.",
+    "Просадка равномерная. Дома нужен режим, иначе темп не выправить."
+   ]
+  },
+  "uz": {
+   "high": [
+    "Kuchli, bir tekis hafta: barcha ko'nikmalar bir xil yuqori darajada.",
+    "Hech bir yo'nalishda pasayish yo'q. Murakkablik qo'shish vaqti."
+   ],
+   "good": [
+    "Yaxshi, bir tekis hafta, ko'nikmalar bir maromda rivojlanmoqda.",
+    "Natija barcha yo'nalishda bir xil — asos yig'ilgan."
+   ],
+   "mid": [
+    "Hafta bir tekis, barcha ko'nikmalar bir darajada. Amaliyot hajmi yetishmaydi.",
+    "Keskin kuchli yoki kuchsiz tomon yo'q. Muntazamlik ustida ishlaymiz."
+   ],
+   "low": [
+    "Hafta og'ir: qiyinchilik barcha ko'nikmalarda bir vaqtda. Asosga qaytish kerak.",
+    "Pasayish bir tekis. Uyda tartib kerak, aks holda sur'at tiklanmaydi."
+   ]
+  },
+  "en": {
+   "high": [
+    "A strong, even week: every skill at the same high level.",
+    "No weak spot in any area. Time to add difficulty."
+   ],
+   "good": [
+    "A good, even week, with the skills developing at the same rate.",
+    "The same result across every area — the base is in place."
+   ],
+   "mid": [
+    "An even week, every skill at the same level. Practice volume is what is missing.",
+    "No sharp strengths or weaknesses. We work on regularity."
+   ],
+   "low": [
+    "A hard week: difficulties in every skill at once. A return to basics is needed.",
+    "The drop is even. Needs a routine at home, or the pace will not recover."
+   ]
+  }
+ },
+ "kids1": {
+  "ru": {
+   "high": [
+    "Сильная ровная неделя: все направления на одном высоком уровне.",
+    "Провалов нет нигде. Программа возраста даётся легко."
+   ],
+   "good": [
+    "Хорошая ровная неделя, все направления идут вместе.",
+    "Результат одинаковый везде — база складывается."
+   ],
+   "mid": [
+    "Неделя ровная, все направления на одном уровне. Не хватает повторов.",
+    "Резких сильных и слабых сторон нет. Работаем над регулярностью."
+   ],
+   "low": [
+    "Неделя тяжёлая: трудности сразу во всём. Возвращаемся к самому простому.",
+    "Просадка равномерная. Дома нужен короткий ежедневный повтор."
+   ]
+  },
+  "uz": {
+   "high": [
+    "Kuchli, bir tekis hafta: barcha yo'nalishlar bir xil yuqori darajada.",
+    "Hech qayerda pasayish yo'q. Yosh dasturi oson kelmoqda."
+   ],
+   "good": [
+    "Yaxshi, bir tekis hafta, barcha yo'nalishlar birga ketmoqda.",
+    "Natija hamma joyda bir xil — asos shakllanmoqda."
+   ],
+   "mid": [
+    "Hafta bir tekis, barcha yo'nalishlar bir darajada. Takror yetishmaydi.",
+    "Keskin kuchli yoki kuchsiz tomon yo'q. Muntazamlik ustida ishlaymiz."
+   ],
+   "low": [
+    "Hafta og'ir: qiyinchilik birdaniga hamma joyda. Eng oddiysiga qaytamiz.",
+    "Pasayish bir tekis. Uyda qisqa, har kunlik takror kerak."
+   ]
+  },
+  "en": {
+   "high": [
+    "A strong, even week: every area at the same high level.",
+    "No weak spot anywhere. The programme for the age comes easily."
+   ],
+   "good": [
+    "A good, even week, with every area moving together.",
+    "The same result everywhere — the base is forming."
+   ],
+   "mid": [
+    "An even week, every area at the same level. Repetition is what is missing.",
+    "No sharp strengths or weaknesses. We work on regularity."
+   ],
+   "low": [
+    "A hard week: difficulties everywhere at once. We go back to the simplest material.",
+    "The drop is even. Needs a short daily repetition at home."
+   ]
+  }
+ }
+};
+
+const TIPS = {
+ "beg": [
+  {
+   "ru": [
+    "Каждый день 5 минут рассказывать вслух о прошедшем дне.",
+    "Записывать голосовое на английском и переслушивать себя."
+   ],
+   "uz": [
+    "Har kuni 5 daqiqa o'tgan kun haqida ovoz chiqarib gapirish.",
+    "Ingliz tilida ovozli xabar yozib, o'zini qayta tinglash."
+   ],
+   "en": [
+    "Five minutes a day talking aloud about the day just gone.",
+    "Recording a voice note in English and listening back."
+   ]
+  },
+  {
+   "ru": [
+    "Слушать короткий подкаст для начинающих по 10 минут в день.",
+    "Смотреть сериал с английскими субтитрами по одной серии."
+   ],
+   "uz": [
+    "Kuniga 10 daqiqa boshlovchilar uchun qisqa podkast tinglash.",
+    "Serialni ingliz subtitrlari bilan bir qismdan ko'rish."
+   ],
+   "en": [
+    "Ten minutes a day of a short podcast for beginners.",
+    "One episode of a series with English subtitles."
+   ]
+  },
+  {
+   "ru": [
+    "Читать по одной странице адаптированной книги каждый день.",
+    "Читать вслух короткие тексты — 10 минут в день."
+   ],
+   "uz": [
+    "Har kuni moslashtirilgan kitobdan bir bet o'qish.",
+    "Qisqa matnlarni ovoz chiqarib o'qish — kuniga 10 daqiqa."
+   ],
+   "en": [
+    "One page of a graded reader every day.",
+    "Reading short texts aloud for ten minutes a day."
+   ]
+  },
+  {
+   "ru": [
+    "Писать по 5 предложений о дне в заметках телефона.",
+    "Составлять короткие сообщения на английском знакомым."
+   ],
+   "uz": [
+    "Telefon eslatmalarida kun haqida 5 ta gap yozish.",
+    "Tanishlarga ingliz tilida qisqa xabarlar yozish."
+   ],
+   "en": [
+    "Five sentences about the day in phone notes.",
+    "Writing short messages in English to people you know."
+   ]
+  },
+  {
+   "ru": [
+    "Делать по одному упражнению на тему недели каждый день.",
+    "Составлять по 5 своих предложений с конструкцией недели."
+   ],
+   "uz": [
+    "Har kuni hafta mavzusi bo'yicha bitta mashq bajarish.",
+    "Hafta konstruksiyasi bilan 5 ta o'z gapini tuzish."
+   ],
+   "en": [
+    "One exercise on this week's topic every day.",
+    "Writing five of your own sentences with this week's structure."
+   ]
+  },
+  {
+   "ru": [
+    "Повторять слова недели в приложении по 10 минут в день.",
+    "Подписать предметы дома английскими стикерами."
+   ],
+   "uz": [
+    "Hafta so'zlarini ilovada kuniga 10 daqiqa takrorlash.",
+    "Uydagi buyumlarga inglizcha stikerlar yopishtirish."
+   ],
+   "en": [
+    "Ten minutes a day revising this week's words in an app.",
+    "Labelling things around the house with English stickers."
+   ]
+  }
+ ],
+ "adv": [
+  {
+   "ru": [
+    "Записывать 2-минутный монолог на тему недели и разбирать ошибки.",
+    "Отвечать на карточки Part 2 по таймеру — по одной в день."
+   ],
+   "uz": [
+    "Hafta mavzusida 2 daqiqalik monolog yozib, xatolarni tahlil qilish.",
+    "Part 2 kartochkalariga taymer bilan javob berish — kuniga bittadan."
+   ],
+   "en": [
+    "Recording a two-minute monologue on the week's topic and reviewing the errors.",
+    "One Part 2 card a day, answered against the timer."
+   ]
+  },
+  {
+   "ru": [
+    "Слушать TED или подкаст без субтитров по 15 минут в день.",
+    "Раз в неделю делать полный Listening-тест по таймеру."
+   ],
+   "uz": [
+    "Kuniga 15 daqiqa subtitrsiz TED yoki podkast tinglash.",
+    "Haftada bir marta taymer bilan to'liq Listening test ishlash."
+   ],
+   "en": [
+    "Fifteen minutes a day of TED or a podcast without subtitles.",
+    "One full timed Listening test a week."
+   ]
+  },
+  {
+   "ru": [
+    "Читать одну статью в день и выписывать 5 новых слов.",
+    "Отрабатывать True/False/NG отдельным блоком по таймеру."
+   ],
+   "uz": [
+    "Kuniga bitta maqola o'qib, 5 ta yangi so'z yozib olish.",
+    "True/False/NG ni alohida blok sifatida taymer bilan mashq qilish."
+   ],
+   "en": [
+    "One article a day, noting down five new words.",
+    "Drilling True/False/NG as a separate timed block."
+   ]
+  },
+  {
+   "ru": [
+    "Писать одно эссе в неделю по таймеру и разбирать его с учителем.",
+    "Переписывать проверенное эссе набело с учётом правок."
+   ],
+   "uz": [
+    "Haftada bitta esse taymer bilan yozib, o'qituvchi bilan tahlil qilish.",
+    "Tekshirilgan esseni tuzatishlarni hisobga olib qayta yozish."
+   ],
+   "en": [
+    "One timed essay a week, reviewed with the teacher.",
+    "Rewriting the marked essay cleanly, with the corrections applied."
+   ]
+  },
+  {
+   "ru": [
+    "Разбирать свои ошибки недели и переписывать предложения верно.",
+    "Использовать конструкцию недели минимум 3 раза в каждом эссе."
+   ],
+   "uz": [
+    "Haftaning o'z xatolarini tahlil qilib, gaplarni to'g'ri qayta yozish.",
+    "Hafta konstruksiyasini har essede kamida 3 marta ishlatish."
+   ],
+   "en": [
+    "Going through this week's own errors and rewriting the sentences correctly.",
+    "Using this week's structure at least three times in every essay."
+   ]
+  },
+  {
+   "ru": [
+    "Учить лексику коллокациями, а не отдельными словами.",
+    "Использовать 5 слов недели в письменной работе."
+   ],
+   "uz": [
+    "Lug'atni alohida so'z emas, kollokatsiya bilan o'rganish.",
+    "Hafta so'zlaridan 5 tasini yozma ishda ishlatish."
+   ],
+   "en": [
+    "Learning vocabulary as collocations, not single words.",
+    "Using five of this week's words in a written task."
+   ]
+  }
+ ],
+ "kids2": [
+  {
+   "ru": [
+    "Каждый вечер 5 минут рассказывать по-английски, как прошёл день.",
+    "Разыгрывать дома короткие диалоги из учебника по ролям."
+   ],
+   "uz": [
+    "Har kuni kechqurun 5 daqiqa ingliz tilida kun qanday o'tganini gapirib berish.",
+    "Darslikdagi qisqa dialoglarni uyda rollarga bo'lib o'ynash."
+   ],
+   "en": [
+    "Five minutes every evening telling the day in English.",
+    "Acting out short dialogues from the book at home."
+   ]
+  },
+  {
+   "ru": [
+    "Смотреть один короткий мультфильм на английском каждый день.",
+    "Слушать песни недели и подпевать по тексту."
+   ],
+   "uz": [
+    "Har kuni ingliz tilida bitta qisqa multfilm ko'rish.",
+    "Hafta qo'shiqlarini tinglab, matn bo'yicha kuylash."
+   ],
+   "en": [
+    "Watching one short cartoon in English every day.",
+    "Listening to this week's songs and singing along with the lyrics."
+   ]
+  },
+  {
+   "ru": [
+    "Читать вслух 10 минут перед сном.",
+    "Читать по одной короткой истории и пересказывать её вам."
+   ],
+   "uz": [
+    "Uxlashdan oldin 10 daqiqa ovoz chiqarib o'qish.",
+    "Kuniga bitta qisqa hikoya o'qib, sizga gapirib berish."
+   ],
+   "en": [
+    "Reading aloud for ten minutes before bed.",
+    "Reading one short story a day and retelling it to you."
+   ]
+  },
+  {
+   "ru": [
+    "Писать 3-4 предложения о своём дне в тетради.",
+    "Переписывать слова недели по строчке каждый день."
+   ],
+   "uz": [
+    "Daftarga kuni haqida 3-4 ta gap yozish.",
+    "Hafta so'zlarini har kuni bir qatordan ko'chirib yozish."
+   ],
+   "en": [
+    "Writing three or four sentences about the day in a notebook.",
+    "Copying out this week's words, one line each, every day."
+   ]
+  },
+  {
+   "ru": [
+    "Делать по одному упражнению на тему недели каждый день.",
+    "Проговаривать правило недели вслух своими словами."
+   ],
+   "uz": [
+    "Har kuni hafta mavzusi bo'yicha bitta mashq bajarish.",
+    "Hafta qoidasini o'z so'zlari bilan ovoz chiqarib aytish."
+   ],
+   "en": [
+    "One exercise on this week's topic every day.",
+    "Saying this week's rule out loud in their own words."
+   ]
+  },
+  {
+   "ru": [
+    "Повторять карточки со словами недели по 10 минут в день.",
+    "Называть по-английски предметы дома — по 5 слов в день."
+   ],
+   "uz": [
+    "Hafta so'zlari kartochkalarini kuniga 10 daqiqa takrorlash.",
+    "Uydagi buyumlarni ingliz tilida atash — kuniga 5 ta so'z."
+   ],
+   "en": [
+    "Ten minutes a day with this week's word cards.",
+    "Naming objects around the house in English — five a day."
+   ]
+  }
+ ],
+ "kids1": [
+  {
+   "ru": [
+    "Каждый день 3 минуты называть по-английски то, что видите вокруг.",
+    "Задавать дома знакомые вопросы по-английски и ждать ответа одним словом."
+   ],
+   "uz": [
+    "Har kuni 3 daqiqa atrofdagi narsalarni ingliz tilida atash.",
+    "Uyda tanish savollarni ingliz tilida berib, bir so'zli javob kutish."
+   ],
+   "en": [
+    "Three minutes a day naming what you see around you in English.",
+    "Asking familiar questions in English at home and waiting for a one-word answer."
+   ]
+  },
+  {
+   "ru": [
+    "Включать одну и ту же короткую английскую песню каждый день.",
+    "Давать дома простые команды по-английски: stand up, sit down, jump."
+   ],
+   "uz": [
+    "Har kuni bitta qisqa inglizcha qo'shiqni qo'yish.",
+    "Uyda oddiy inglizcha buyruqlar berish: stand up, sit down, jump."
+   ],
+   "en": [
+    "Playing the same short English song every day.",
+    "Giving simple English commands at home: stand up, sit down, jump."
+   ]
+  },
+  {
+   "ru": [
+    "Читать вслух по 5 минут, водя пальцем по строке.",
+    "Узнавать английские буквы на вывесках и упаковках вне занятия."
+   ],
+   "uz": [
+    "Barmoq bilan qator bo'ylab yurib, 5 daqiqa ovoz chiqarib o'qish.",
+    "Mashg'ulotdan tashqarida peshtaxta va o'ramlardagi inglizcha harflarni tanish."
+   ],
+   "en": [
+    "Reading aloud for five minutes, following the line with a finger.",
+    "Spotting English letters on signs and packaging outside the lesson."
+   ]
+  },
+  {
+   "ru": [
+    "Обводить и писать буквы по 5 минут в день, не больше.",
+    "Писать по три знакомых слова в день по памяти."
+   ],
+   "uz": [
+    "Kuniga 5 daqiqa, undan ko'p emas, harflarni chizib va yozib chiqish.",
+    "Kuniga uchta tanish so'zni yoddan yozish."
+   ],
+   "en": [
+    "Tracing and writing letters five minutes a day, no more.",
+    "Writing three familiar words a day from memory."
+   ]
+  },
+  {
+   "ru": [
+    "Повторять фразу недели вслух по 5 раз в день, как считалку.",
+    "Всю неделю задавать дома один и тот же английский вопрос."
+   ],
+   "uz": [
+    "Hafta iborasini kuniga 5 marta, sanoq kabi ovoz chiqarib takrorlash.",
+    "Butun hafta uyda bitta inglizcha savolni takror berish."
+   ],
+   "en": [
+    "Repeating the week's phrase aloud five times a day, like a rhyme.",
+    "Asking the same English question at home all week."
+   ]
+  },
+  {
+   "ru": [
+    "Смотреть карточки со словами недели по 5 минут каждый день.",
+    "Называть по-английски 5 предметов дома каждый вечер."
+   ],
+   "uz": [
+    "Hafta so'zlari kartochkalarini har kuni 5 daqiqa ko'rish.",
+    "Har kechqurun uydagi 5 ta buyumni ingliz tilida atash."
+   ],
+   "en": [
+    "Five minutes a day with the week's word cards.",
+    "Naming five things around the house in English every evening."
+   ]
+  }
+ ]
+};
+
+const TIPS_TOP = {
+ "beg": {
+  "ru": [
+   "Добавить материал уровнем выше — текущий уже не вызывает трудностей.",
+   "Больше практики с носителями: разговорные клубы, обмен языками."
+  ],
+  "uz": [
+   "Bir daraja yuqori material qo'shish — joriysi qiyinchilik tug'dirmayapti.",
+   "Ona tili egalari bilan ko'proq amaliyot: suhbat klublari, til almashinuvi."
+  ],
+  "en": [
+   "Adding material from the next level up — this one no longer challenges them.",
+   "More practice with native speakers: conversation clubs, language exchange."
+  ]
+ },
+ "adv": {
+  "ru": [
+   "Перейти к заданиям на целевой балл и работать на скорость.",
+   "Добавить академические тексты вне программы для расширения лексики."
+  ],
+  "uz": [
+   "Maqsadli ball topshiriqlariga o'tib, tezlik ustida ishlash.",
+   "Lug'atni kengaytirish uchun dastur tashqarisidagi akademik matnlar qo'shish."
+  ],
+  "en": [
+   "Moving to target-band tasks and working on speed.",
+   "Adding academic texts beyond the programme to widen vocabulary."
+  ]
+ },
+ "kids2": {
+  "ru": [
+   "Поддерживать интерес: короткие книги и мультфильмы на английском.",
+   "Давать более сложные задания — текущий уровень уже освоен."
+  ],
+  "uz": [
+   "Qiziqishni saqlash: ingliz tilida qisqa kitoblar va multfilmlar.",
+   "Murakkabroq topshiriqlar berish — joriy daraja o'zlashtirilgan."
+  ],
+  "en": [
+   "Keeping the interest alive: short books and cartoons in English.",
+   "Moving on to harder tasks — this level is already mastered."
+  ]
+ },
+ "kids1": {
+  "ru": [
+   "Поддерживать интерес: книжки с картинками и мультфильмы на английском.",
+   "Давать задания посложнее — программу возраста уже перерос."
+  ],
+  "uz": [
+   "Qiziqishni saqlash: rasmli kitoblar va ingliz tilidagi multfilmlar.",
+   "Murakkabroq topshiriqlar berish — yosh dasturidan o'sib chiqqan."
+  ],
+  "en": [
+   "Keeping the interest alive: picture books and cartoons in English.",
+   "Moving to harder tasks — they have outgrown the programme for the age."
+  ]
+ }
+};
+
+const PREP_DATA = [
+  { num:'1',
+    title:{ ru:'Слабый результат', uz:'Past natija', en:'Poor performance' },
+    desc:{
+      ru:'Ученик испытывал серьёзные трудности. Материал не усвоен и не применяется на практике.',
+      uz:"O'quvchi jiddiy qiyinchiliklarga duch keldi. Bilim mustahkamlanmagan va amalda qo'llanilmagan.",
+      en:'The student faced serious difficulties. The material has not been learned and is not applied in practice.' } },
+  { num:'2',
+    title:{ ru:'Средний результат', uz:"O'rtacha natija", en:'Average performance' },
+    desc:{
+      ru:'Базовое понимание есть, но знания ещё не автоматизированы и требуют усилий при использовании.',
+      uz:"Asosiy tushuncha bor, lekin bilimlar hali avtomatik emas va qo'llashda harakat talab qiladi.",
+      en:'There is basic understanding, but the knowledge is not yet automatic and requires effort to use.' } },
+  { num:'3',
+    title:{ ru:'Отличный результат', uz:"A'lo natija", en:'Excellent performance' },
+    desc:{
+      ru:'Ученик уверенно и свободно использует весь пройденный материал. Грамматика и лексика — полностью автоматизированы.',
+      uz:"O'quvchi barcha mavzularni ishonch bilan va erkin qo'llaydi. Grammatika va lug'at to'liq avtomatlashgan.",
+      en:'The student confidently and fluently uses all the material covered. Grammar and vocabulary are fully automatic.' } },
+];
+
+const ratings = {};
+let prepLevel = 0;
+let starOfWeek = false;
+
+function buildSkills() {
+  const list = document.getElementById('skillsList');
+  list.innerHTML = '';
+  SKILLS.forEach((s, i) => {
+    ratings[i] = 0;
+    const item = document.createElement('div');
+    item.className = 'skill-item';
+    item.innerHTML = `
+      <div class="skill-row">
+        <div><div class="skill-label-line1" id="skname-${i}">${s[lang]}</div></div>
+        <div class="stars" id="stars-${i}">${[1,2,3,4,5].map(v=>`<span class="star" onclick="setStar(${i},${v})">★</span>`).join('')}</div>
+        <textarea class="skill-comment" id="cmt-${i}" rows="2" placeholder="—"></textarea>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+function relabelSkills() {
+  SKILLS.forEach((s, i) => {
+    const el = document.getElementById('skname-' + i);
+    if (el) el.textContent = s[lang];
+  });
+}
+
+function buildPrep() {
+  const grid = document.getElementById('prepGrid');
+  grid.innerHTML = PREP_DATA.map(p => `
+    <div class="prep-card p${p.num}" data-lv="${p.num}" onclick="selectPrep(${p.num})">
+      <div class="prep-check">✓</div>
+      <div class="prep-num">${p.num}</div>
+      <div class="prep-title">${p.title[lang]}</div>
+      <div class="prep-desc">${p.desc[lang]}</div>
+    </div>`).join('');
+  if (prepLevel >= 1 && prepLevel <= 3) {
+    const c = grid.querySelector(`.prep-card[data-lv="${prepLevel}"]`);
+    if (c) c.classList.add('sel-' + prepLevel);
+  }
+}
+
+function setStar(idx, v) {
+  ratings[idx] = v;
+  document.querySelectorAll(`#stars-${idx} .star`).forEach((s,i) => s.classList.toggle('on', i < v));
+  refreshSuggestions();
+}
+
+// Kids 1-4 / A1-A2 / B1-C1 get different phrasing for the same star rating.
+// With no group picked yet, the A1-A2 set reads acceptably for either audience.
+function levelBand() {
+  const g = document.getElementById('f-group').value;
+  if (!g) return 'beg';
+  if (g.startsWith('Kids')) return /Level [12]$/.test(g) ? 'kids1' : 'kids2';
+  if (g.startsWith('A1') || g.startsWith('A2')) return 'beg';
+  return 'adv';
+}
+
+function refreshSuggestions() {
+  if (document.getElementById('sugg-obs')?.classList.contains('show')) showObsSuggestions();
+  if (document.getElementById('sugg-tip')?.classList.contains('show')) showTipSuggestions();
+}
+
+// Reads the pattern of stars rather than one skill: how the week went overall,
+// and which skill came out strongest / weakest. Null until something is rated.
+function ratingStats() {
+  const rated = SKILLS.map((_, i) => ({ i, v: ratings[i] || 0 })).filter(x => x.v > 0);
+  if (!rated.length) return null;
+  const vals = rated.map(x => x.v);
+  const max = Math.max(...vals), min = Math.min(...vals);
+  return {
+    avg: vals.reduce((a, b) => a + b, 0) / vals.length,
+    strong: rated.find(x => x.v === max).i,
+    weak:   rated.find(x => x.v === min).i,
+    flat: max === min,   // one skill rated, or all rated the same: no spread to name
+    min, max,
+  };
+}
+
+let obsList = [], tipList = [];
+
+function renderChips(boxId, list, fn, fieldId) {
+  const box = document.getElementById(boxId);
+  const cur = fieldId ? document.getElementById(fieldId).value : '';
+  box.innerHTML = list.map((ph, k) =>
+    `<button type="button" class="sugg-chip${cur.includes(ph) ? ' added' : ''}" onclick="${fn}(${k})">${ph}</button>`).join('');
+  box.classList.toggle('show', list.length > 0);
+}
+
+// Chips add to what is already in the box rather than replacing it; tapping an
+// added chip takes that sentence back out. The panel stays open either way.
+function toggleIntoField(fieldId, text) {
+  const el = document.getElementById(fieldId);
+  let v = el.value;
+  if (v.includes(text)) {
+    v = v.replace(text, '');
+  } else {
+    const base = v.replace(/[\s.]+$/, '');
+    v = base ? base + '. ' + text : text;
+  }
+  el.value = el.title = v.replace(/\s*\.\s*\./g, '.').replace(/\s{2,}/g, ' ').replace(/^[\s.]+/, '').trim();
+}
+
+// Teachers write about one of a few recurring things, not only about level.
+// 'progress' is inferred from the stars; the rest are picked by hand.
+const OBS_TABS = ['progress', 'homework', 'behaviour', 'vocabulary', 'motivation'];
+let obsTheme = 'progress';
+
+function buildObsTabs() {
+  const t = T[lang], box = document.getElementById('obsThemes');
+  if (!box) return;
+  const label = { progress: t.thProgress, homework: t.thHomework, behaviour: t.thBehaviour,
+                  vocabulary: t.thVocabulary, motivation: t.thMotivation };
+  box.innerHTML = OBS_TABS.map(k =>
+    `<button type="button" class="obs-tab${k === obsTheme ? ' on' : ''}" onclick="setObsTheme('${k}')">${label[k]}</button>`).join('');
+}
+
+function setObsTheme(k) {
+  obsTheme = k;
+  buildObsTabs();
+  showObsSuggestions();
+}
+
+function showObsSuggestions() {
+  const band = levelBand();
+  if (obsTheme !== 'progress') {
+    const th = OBS_THEMES[band]?.[lang]?.[obsTheme];
+    obsList = th ? th.good.concat(th.bad) : [];
+    return renderChips('sugg-obs', obsList, 'useObs', 'f-obs');
+  }
+  const st = ratingStats();
+  if (!st) { obsList = []; return renderChips('sugg-obs', [], 'useObs', 'f-obs'); }
+  const cat = st.avg >= 4.5 ? 'high' : st.avg >= 3.5 ? 'good' : st.avg >= 2.5 ? 'mid' : 'low';
+  obsList = st.flat
+    ? OBS_FLAT[band][lang][cat]
+    : OBS_TPL[band][lang][cat].map(t => t
+        .replace('{strong}', SKILLS[st.strong][lang].toLowerCase())
+        .replace('{weak}',   SKILLS[st.weak][lang].toLowerCase()));
+  renderChips('sugg-obs', obsList, 'useObs', 'f-obs');
+}
+
+const TIP_TABS = ['skill', 'homework', 'vocabulary', 'support'];
+let tipTheme = 'skill';
+
+function buildTipTabs() {
+  const t = T[lang], box = document.getElementById('tipThemes');
+  if (!box) return;
+  const label = { skill: t.tpSkill, homework: t.tpHomework, vocabulary: t.tpVocabulary, support: t.tpSupport };
+  box.innerHTML = TIP_TABS.map(k =>
+    `<button type="button" class="obs-tab${k === tipTheme ? ' on' : ''}" onclick="setTipTheme('${k}')">${label[k]}</button>`).join('');
+}
+
+function setTipTheme(k) {
+  tipTheme = k;
+  buildTipTabs();
+  showTipSuggestions();
+}
+
+function showTipSuggestions() {
+  const band = levelBand();
+  if (tipTheme !== 'skill') {
+    tipList = TIP_THEMES[band]?.[tipTheme]?.[lang] || [];
+    return renderChips('sugg-tip', tipList, 'useTip', 'f-tip');
+  }
+  const st = ratingStats();
+  if (!st) { tipList = []; return renderChips('sugg-tip', [], 'useTip', 'f-tip'); }
+  tipList = st.min >= 5 ? TIPS_TOP[band][lang]
+          : st.flat      ? [0, 2, 5].map(i => TIPS[band][i][lang][0])   // speaking / reading / vocabulary
+          :                TIPS[band][st.weak][lang];
+  renderChips('sugg-tip', tipList, 'useTip', 'f-tip');
+}
+
+function useObs(k) { toggleIntoField('f-obs', obsList[k]); showObsSuggestions(); }
+function useTip(k) { toggleIntoField('f-tip', tipList[k]); showTipSuggestions(); }
+function suggestObsOnFocus() { if (!document.getElementById('f-obs').value.trim()) showObsSuggestions(); }
+
+function suggestTipOnFocus() { if (!document.getElementById('f-tip').value.trim()) showTipSuggestions(); }
+
+
+function selectPrep(lv) {
+  prepLevel = lv;
+  document.querySelectorAll('.prep-card').forEach(c => c.classList.remove('sel-1','sel-2','sel-3'));
+  const c = document.querySelector(`.prep-card[data-lv="${lv}"]`);
+  if (c) c.classList.add(`sel-${lv}`);
+}
+
+function toggleStar() {
+  starOfWeek = !starOfWeek;
+  document.getElementById('starToggle').classList.toggle('on', starOfWeek);
+  document.getElementById('starReason').classList.toggle('show', starOfWeek);
+  if (starOfWeek) document.getElementById('f-star-why').focus();
+}
+
+function applyLang(l) {
+  lang = l;
+  const t = T[l];
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t[el.getAttribute('data-i18n')]; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t[el.getAttribute('data-i18n-ph')]; });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t[el.getAttribute('data-i18n-title')]; });
+  const sel = document.getElementById('f-group');
+  sel.options[0].text = t.groupPlaceholder;
+  const ogs = sel.querySelectorAll('optgroup');
+  if (ogs[0]) ogs[0].label = t.kids;
+  if (ogs[1]) ogs[1].label = t.adults;
+  document.querySelectorAll('textarea, input[type="text"]').forEach(el => {
+    el.lang = l;              // picks the browser's dictionary for this language
+    el.spellcheck = true;
+  });
+  relabelSkills();
+  buildPrep();
+  buildObsTabs();
+  buildTipTabs();
+}
+
+const val = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+// Convert an ISO week value ("2026-W20") into its Monday–Sunday calendar dates
+function isoWeekToRange(v) {
+  const m = /^(\d{4})-W(\d{2})$/.exec(v || '');
+  if (!m) return null;
+  const year = +m[1], week = +m[2];
+  const jan4 = new Date(Date.UTC(year, 0, 4));
+  const jan4Day = jan4.getUTCDay() || 7;            // Mon=1 … Sun=7
+  const monday = new Date(jan4);
+  monday.setUTCDate(jan4.getUTCDate() - (jan4Day - 1) + (week - 1) * 7);
+  const sunday = new Date(monday);
+  sunday.setUTCDate(monday.getUTCDate() + 6);
+  const part = dt => ({ y: dt.getUTCFullYear(), m: dt.getUTCMonth(), d: dt.getUTCDate() });
+  return { s: part(monday), e: part(sunday) };
+}
+
+// Short date range in the active language, e.g. "11–17 мая" or "29 июн – 1 июл"
+function fmtRange(s, e) {
+  const mon = T[lang].months;
+  if (s.m === e.m && s.y === e.y) return `${s.d}–${e.d} ${mon[s.m]}`;
+  return `${s.d} ${mon[s.m]} – ${e.d} ${mon[e.m]}`;
+}
+
+const getPeriod = () => {
+  const r = isoWeekToRange(val('f-week'));
+  return r ? fmtRange(r.s, r.e) : T[lang].dash;
+};
+
+function buildFilename() {
+  const name = val('f-name').trim() || 'student';
+  const r = isoWeekToRange(val('f-week'));
+  const pad = n => String(n).padStart(2, '0');
+  const range = r ? `${pad(r.s.d)}.${pad(r.s.m + 1)}-${pad(r.e.d)}.${pad(r.e.m + 1)}` : '';
+  const star = starOfWeek ? 'star' : '';
+  return [name, range, star].filter(Boolean).join('_').replace(/\s+/g, '_');
+}
+
+function buildSnapshot() {
+  const t = T[lang];
+  const dash = t.dash;
+
+  // localized snapshot labels
+  document.getElementById('sn-badge').textContent     = t.reportLabel;
+  document.getElementById('sn-lbl-about').textContent  = t.about;
+  document.getElementById('sn-lbl-grade').textContent  = t.grade;
+  document.getElementById('sn-lbl-skills').textContent = t.skills;
+  document.getElementById('sn-lbl-obs').textContent    = t.observation;
+  document.getElementById('sn-lbl-tip').textContent    = t.tip;
+  document.getElementById('sn-fl-name').textContent    = t.nameLabel;
+  document.getElementById('sn-fl-group').textContent   = t.groupLabel;
+  document.getElementById('sn-fl-teacher').textContent = t.teacherLabel;
+  document.getElementById('sn-fl-period').textContent  = t.periodLabel;
+  document.getElementById('sn-th1').textContent = t.thSkill;
+  document.getElementById('sn-th2').textContent = t.thScore;
+  document.getElementById('sn-th3').textContent = t.thComment;
+
+  // values
+  document.getElementById('sn-name').textContent    = val('f-name')    || dash;
+  document.getElementById('sn-group').textContent   = val('f-group')   || dash;
+  document.getElementById('sn-teacher').textContent = val('f-teacher') || dash;
+  document.getElementById('sn-period').textContent  = getPeriod();
+  document.getElementById('sn-obs').textContent     = val('f-obs')     || dash;
+  document.getElementById('sn-tip').textContent     = val('f-tip')     || dash;
+
+  const root = document.getElementById('sn-root');
+  document.getElementById('sn-star').classList.toggle('show', starOfWeek);
+  root.classList.toggle('stamped', starOfWeek);
+  document.getElementById('sn-star-title').textContent = t.starBanner;
+  document.getElementById('sn-star-sub').textContent   = t.starBannerSub;
+  const why = val('f-star-why');
+  document.getElementById('sn-star-reason').classList.toggle('show', starOfWeek && !!why);
+  document.getElementById('sn-star-rl').textContent  = t.reasonTitle;
+  document.getElementById('sn-star-why').textContent = why;
+
+  const prepEl = document.getElementById('sn-prep');
+  if (prepLevel >= 1 && prepLevel <= 3) {
+    const p = PREP_DATA[prepLevel - 1];
+    prepEl.innerHTML = `
+      <div class="sn-result r${prepLevel}">
+        <div class="sn-rbadge"><span class="rn">${p.num}</span><span class="rof">${t.of3}</span></div>
+        <div class="sn-rbody">
+          <div class="sn-rtitle">${p.title[lang]}</div>
+          <div class="sn-rdesc">${p.desc[lang]}</div>
+        </div>
+      </div>`;
+  } else {
+    prepEl.innerHTML = `<div class="sn-rnone">${t.noGrade}</div>`;
+  }
+
+  // A skill nobody rated must not read as a skill rated zero.
+  const anyComment = SKILLS.some((_, i) => document.getElementById(`cmt-${i}`)?.value.trim());
+  root.classList.toggle('no-cmt', !anyComment);
+
+  document.getElementById('sn-skills').innerHTML = SKILLS.map((s, i) => {
+    const score = ratings[i]
+      ? [1,2,3,4,5].map(v => `<span style="color:${v <= ratings[i] ? '#007AFF' : '#E5E5EA'}">★</span>`).join('')
+      : `<span class="sn-norate">${t.notRated}</span>`;
+    const cmt = document.getElementById(`cmt-${i}`)?.value.trim() || dash;
+    return `
+      <div class="sn-sr">
+        <div><div class="sn-sk-name">${s[lang]}</div></div>
+        <div class="sn-stars">${score}</div>
+        <div class="sn-cmt">${cmt}</div>
+      </div>`;
+  }).join('');
+
+  fitSnapshot();
+}
+
+// Snapshot is a fixed 540x960 canvas: tighten the gaps between sections until
+// the content fits, so a long award reason or observation never gets clipped.
+// Measured off the footer (not scrollHeight, which also counts the rotated stamp).
+function fitSnapshot() {
+  const root = document.getElementById('sn-root');
+  const foot = root.querySelector('.sn-footer');
+  const gaps = root.querySelectorAll('.sn-star, .sn-sec');
+  const rows = root.querySelectorAll('.sn-sr');
+  const overflows = () =>
+    foot.getBoundingClientRect().bottom > root.getBoundingClientRect().bottom - 20;
+  for (let m = 14; m >= 6; m--) {
+    gaps.forEach(el => el.style.marginBottom = m + 'px');
+    if (!overflows()) return;
+  }
+  // Gaps alone were not enough (long diagnostic comments): tighten the skill rows too.
+  for (let pad = 6; pad >= 2; pad--) {
+    rows.forEach(el => { el.style.paddingTop = el.style.paddingBottom = pad + 'px'; });
+    if (!overflows()) return;
+  }
+}
+
+async function saveImage() {
+  const btn = document.getElementById('saveBtn');
+  const status = document.getElementById('status');
+  const t = T[lang];
+  btn.disabled = true; btn.textContent = t.saving; status.textContent = '';
+  try {
+    buildSnapshot();
+    await new Promise(r => setTimeout(r, 100));
+    const canvas = await html2canvas(document.getElementById('snapshot'), {
+      scale: 3, useCORS: true, backgroundColor: '#ffffff', width: 540, height: 960, windowWidth: 540,
+    });
+    const link = document.createElement('a');
+    link.download = buildFilename() + '.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    btn.textContent = t.saved; btn.style.background = '#34C759';
+    setTimeout(() => { btn.textContent = T[lang].saveBtn; btn.style.background = ''; btn.disabled = false; }, 2500);
+  } catch(e) {
+    status.textContent = t.errPrefix + e.message;
+    btn.textContent = T[lang].saveBtn; btn.disabled = false;
+  }
+}
+
+// init
+buildSkills();
+applyLang('ru');
+</script>
+</body>
+</html>
