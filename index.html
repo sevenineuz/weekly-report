@@ -106,6 +106,22 @@
   .btn-save:hover { opacity: .88; } .btn-save:disabled { opacity: .45; cursor: not-allowed; }
   .status { font-size: 11px; color: var(--gray4); text-align: center; margin-top: 8px; min-height: 16px; }
 
+
+  /* Result sheet. A page cannot write to the photo gallery; the system share
+     sheet can. iOS only opens it from its own tap, and rendering the PNG is
+     async, so the finished image waits here for a second, deliberate tap. */
+  .sheet { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,.45); align-items: flex-end; justify-content: center; padding: 16px; }
+  .sheet.show { display: flex; }
+  .sheet-card { background: var(--white); border-radius: 18px; width: 100%; max-width: 420px; padding: 18px 18px 8px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+  .sheet-title { font-size: 15px; font-weight: 700; color: var(--gray1); margin-bottom: 12px; }
+  .sh-preview { width: 100%; max-height: 40vh; object-fit: contain; border-radius: 10px; border: 1px solid var(--gray5); background: var(--gray6); display: block; }
+  .sh-hint { font-size: 10.5px; color: var(--gray3); line-height: 1.45; margin: 10px 2px 12px; }
+  .sh-btn { width: 100%; padding: 14px; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .sh-primary { background: var(--blue); color: #fff; }
+  .sh-secondary { background: var(--gray6); color: var(--blue); margin-top: 8px; }
+  .sh-status { font-size: 11.5px; color: var(--gray3); min-height: 16px; margin-top: 8px; }
+  .sh-close { background: none; border: none; color: var(--gray3); font-family: inherit; font-size: 13px; padding: 13px; cursor: pointer; width: 100%; }
+
   /* snapshot */
   #snapshot { position: fixed; left: -9999px; top: 0; width: 540px; height: 960px; background: white; font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif; overflow: hidden; }
   .sn { width: 100%; height: 100%; display: flex; flex-direction: column; padding: 28px 28px 20px; position: relative; overflow: hidden; }
@@ -251,6 +267,18 @@
   </div>
 </div>
 
+<div class="sheet" id="sheet">
+  <div class="sheet-card">
+    <div class="sheet-title" data-i18n="sheetTitle"></div>
+    <img class="sh-preview" id="shPreview" alt="">
+    <div class="sh-hint" data-i18n="shareHint"></div>
+    <button type="button" class="sh-btn sh-primary"   data-i18n="shareBtn" onclick="shareNow()"></button>
+    <button type="button" class="sh-btn sh-secondary" data-i18n="dlBtn"    onclick="downloadFromSheet()"></button>
+    <div class="sh-status" id="shStatus"></div>
+    <button type="button" class="sh-close" data-i18n="closeBtn" onclick="closeSheet()"></button>
+  </div>
+</div>
+
 <div id="snapshot">
   <div class="sn" id="sn-root">
     <div class="sn-stamp">
@@ -362,6 +390,10 @@ const T = {
     groupPlaceholder:'— выбрать —', kids:'Дети', adults:'Взрослые',
     weekTitle:'Выберите неделю',
     saveBtn:'Сохранить как изображение', saving:'Сохраняем...', saved:'Сохранено ✓', errPrefix:'Ошибка: ',
+    sheetTitle:'Отчёт готов',
+    shareBtn:'Сохранить в галерею', dlBtn:'Скачать файлом', closeBtn:'Закрыть',
+    shareHint:'Нажмите «Сохранить в галерею» и выберите «Сохранить изображение». Если меню не открылось — нажмите и удерживайте картинку выше, затем «Добавить в Фото».',
+    shareDone:'Готово ✓', shareFail:'Меню «Поделиться» не открылось. Скачайте файлом или сохраните картинку долгим нажатием.',
     of3:'из 3', noGrade:'— оценка не выбрана —', dash:'—', notRated:'не оценивалось',
     months:['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'],
   },
@@ -391,6 +423,10 @@ const T = {
     groupPlaceholder:'— tanlash —', kids:'Bolalar', adults:'Kattalar',
     weekTitle:'Haftani tanlang',
     saveBtn:'Rasm sifatida saqlash', saving:'Saqlanmoqda...', saved:'Saqlandi ✓', errPrefix:'Xato: ',
+    sheetTitle:'Hisobot tayyor',
+    shareBtn:'Galereyaga saqlash', dlBtn:'Fayl sifatida yuklash', closeBtn:'Yopish',
+    shareHint:'«Galereyaga saqlash» ni bosing va «Save Image» ni tanlang. Menyu ochilmasa — yuqoridagi rasmni bosib turing va «Add to Photos» ni tanlang.',
+    shareDone:'Tayyor ✓', shareFail:'«Ulashish» menyusi ochilmadi. Faylni yuklab oling yoki rasmni bosib turib saqlang.',
     of3:'3 dan', noGrade:'— baho tanlanmagan —', dash:'—', notRated:'baholanmadi',
     months:['yan','fev','mar','apr','may','iyn','iyl','avg','sen','okt','noy','dek'],
   },
@@ -420,6 +456,10 @@ const T = {
     groupPlaceholder:'— select —', kids:'Kids', adults:'Adults',
     weekTitle:'Choose a week',
     saveBtn:'Save as image', saving:'Saving...', saved:'Saved ✓', errPrefix:'Error: ',
+    sheetTitle:'Report ready',
+    shareBtn:'Save to gallery', dlBtn:'Download as file', closeBtn:'Close',
+    shareHint:'Tap "Save to gallery", then choose "Save Image". If the menu does not open, press and hold the picture above and choose "Add to Photos".',
+    shareDone:'Done ✓', shareFail:'The share menu did not open. Download the file, or press and hold the picture to save it.',
     of3:'of 3', noGrade:'— no grade selected —', dash:'—', notRated:'not assessed',
     months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   },
@@ -2441,6 +2481,16 @@ function fitSnapshot() {
   }
 }
 
+// The finished PNG, kept as a File so the share sheet can take it on the next tap.
+let lastFile = null, lastUrl = null;
+
+function downloadBlobUrl(name, url) {
+  const link = document.createElement('a');
+  link.download = name;
+  link.href = url;
+  link.click();
+}
+
 async function saveImage() {
   const btn = document.getElementById('saveBtn');
   const status = document.getElementById('status');
@@ -2452,16 +2502,59 @@ async function saveImage() {
     const canvas = await html2canvas(document.getElementById('snapshot'), {
       scale: 3, useCORS: true, backgroundColor: '#ffffff', width: 540, height: 960, windowWidth: 540,
     });
-    const link = document.createElement('a');
-    link.download = buildFilename() + '.png';
-    link.href = canvas.toDataURL('image/png');
-    link.click();
+    const name = buildFilename() + '.png';
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if (lastUrl) URL.revokeObjectURL(lastUrl);
+    lastUrl = URL.createObjectURL(blob);
+    lastFile = new File([blob], name, { type: 'image/png' });
+
+    // A web page cannot write to Photos, but the system share sheet can: on iOS it
+    // offers "Save Image", on Android "Save to gallery". iOS only opens that sheet
+    // from a tap of its own, and the render above is async, so the report waits in
+    // our own sheet for a second tap instead of going straight to Files.
+    const touch = window.matchMedia('(pointer: coarse)').matches;
+    if (touch && navigator.canShare && navigator.canShare({ files: [lastFile] })) {
+      openSheet();
+      btn.textContent = T[lang].saveBtn; btn.disabled = false;
+      return;
+    }
+
+    // Desktop: no share sheet worth using, so download as before.
+    downloadBlobUrl(name, lastUrl);
     btn.textContent = t.saved; btn.style.background = '#34C759';
     setTimeout(() => { btn.textContent = T[lang].saveBtn; btn.style.background = ''; btn.disabled = false; }, 2500);
   } catch(e) {
     status.textContent = t.errPrefix + e.message;
     btn.textContent = T[lang].saveBtn; btn.disabled = false;
   }
+}
+
+function openSheet() {
+  document.getElementById('shPreview').src = lastUrl;
+  document.getElementById('shStatus').textContent = '';
+  document.getElementById('sheet').classList.add('show');
+}
+
+function closeSheet() {
+  document.getElementById('sheet').classList.remove('show');
+}
+
+// Fires from its own tap, so iOS accepts it. Only the file is shared: adding
+// title/text makes some targets drop the image and share the text instead.
+async function shareNow() {
+  const t = T[lang], st = document.getElementById('shStatus');
+  if (!lastFile) return;
+  try {
+    await navigator.share({ files: [lastFile] });
+    st.textContent = t.shareDone;
+  } catch(e) {
+    if (e.name === 'AbortError') return;   // teacher dismissed the share sheet
+    st.textContent = t.shareFail;
+  }
+}
+
+function downloadFromSheet() {
+  if (lastFile) downloadBlobUrl(lastFile.name, lastUrl);
 }
 
 // init
