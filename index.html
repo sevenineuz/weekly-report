@@ -360,6 +360,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 let lang = 'ru';
 
@@ -391,8 +392,8 @@ const T = {
     weekTitle:'Выберите неделю',
     saveBtn:'Сохранить как изображение', saving:'Сохраняем...', saved:'Сохранено ✓', errPrefix:'Ошибка: ',
     sheetTitle:'Отчёт готов — отправить родителю',
-    shareBtn:'Отправить в Telegram', dlBtn:'Скачать файлом', closeBtn:'Закрыть',
-    shareHint:'Откроется меню — выберите Telegram, затем чат родителя. В Telegram отправляйте как «Файл»: имя и чёткость сохранятся. В том же меню есть «Сохранить изображение» — если нужно в галерею.',
+    shareBtn:'Отправить в Telegram (PDF)', dlBtn:'Сохранить картинкой (PNG)', closeBtn:'Закрыть',
+    shareHint:'Отправляется PDF — Telegram передаёт его файлом, без сжатия и с именем ученика. Откроется меню — выберите Telegram, затем чат родителя. Картинка PNG — для галереи и архива.',
     shareDone:'Готово ✓', shareFail:'Меню «Поделиться» не открылось. Скачайте файлом или сохраните картинку долгим нажатием.',
     of3:'из 3', noGrade:'— оценка не выбрана —', dash:'—', notRated:'не оценивалось',
     months:['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'],
@@ -424,8 +425,8 @@ const T = {
     weekTitle:'Haftani tanlang',
     saveBtn:'Rasm sifatida saqlash', saving:'Saqlanmoqda...', saved:'Saqlandi ✓', errPrefix:'Xato: ',
     sheetTitle:'Hisobot tayyor — ota-onaga yuborish',
-    shareBtn:'Telegram orqali yuborish', dlBtn:'Fayl sifatida yuklash', closeBtn:'Yopish',
-    shareHint:'Menyu ochiladi — Telegram ni, so‘ng ota-ona chatini tanlang. Telegram da «Fayl» sifatida yuboring: nomi va aniqligi saqlanadi. Shu menyuda «Save Image» ham bor — galereyaga saqlash uchun.',
+    shareBtn:'Telegram orqali yuborish (PDF)', dlBtn:'Rasm sifatida saqlash (PNG)', closeBtn:'Yopish',
+    shareHint:'PDF yuboriladi — Telegram uni fayl sifatida, siqmasdan va o‘quvchi nomi bilan uzatadi. Menyu ochiladi — Telegram ni, so‘ng ota-ona chatini tanlang. PNG rasm — galereya va arxiv uchun.',
     shareDone:'Tayyor ✓', shareFail:'«Ulashish» menyusi ochilmadi. Faylni yuklab oling yoki rasmni bosib turib saqlang.',
     of3:'3 dan', noGrade:'— baho tanlanmagan —', dash:'—', notRated:'baholanmadi',
     months:['yan','fev','mar','apr','may','iyn','iyl','avg','sen','okt','noy','dek'],
@@ -457,8 +458,8 @@ const T = {
     weekTitle:'Choose a week',
     saveBtn:'Save as image', saving:'Saving...', saved:'Saved ✓', errPrefix:'Error: ',
     sheetTitle:'Report ready — send to the parent',
-    shareBtn:'Send via Telegram', dlBtn:'Download as file', closeBtn:'Close',
-    shareHint:'The share menu opens — pick Telegram, then the parent\'s chat. Send it as a "File" in Telegram so the name and sharpness survive. The same menu has "Save Image" if you want it in the gallery.',
+    shareBtn:'Send via Telegram (PDF)', dlBtn:'Save as picture (PNG)', closeBtn:'Close',
+    shareHint:'A PDF is sent — Telegram passes it through as a file, uncompressed and carrying the student\'s name. The share menu opens: pick Telegram, then the parent\'s chat. The PNG is for the gallery and your archive.',
     shareDone:'Done ✓', shareFail:'The share menu did not open. Download the file, or press and hold the picture to save it.',
     of3:'of 3', noGrade:'— no grade selected —', dash:'—', notRated:'not assessed',
     months:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
@@ -2481,8 +2482,12 @@ function fitSnapshot() {
   }
 }
 
-// The finished PNG, kept as a File so the share sheet can take it on the next tap.
-let lastFile = null, lastUrl = null;
+// The finished report, kept as Files so the share sheet can take one on the next tap.
+// PNG for the camera roll; PDF for sending, because Telegram re-encodes anything it
+// recognises as a photo (losing the filename and softening the small text) but passes
+// a PDF through untouched, as a document.
+let lastFile = null, lastUrl = null;      // PNG
+let lastPdfFile = null, lastPdfUrl = null;
 
 function downloadBlobUrl(name, url) {
   const link = document.createElement('a');
@@ -2502,25 +2507,35 @@ async function saveImage() {
     const canvas = await html2canvas(document.getElementById('snapshot'), {
       scale: 3, useCORS: true, backgroundColor: '#ffffff', width: 540, height: 960, windowWidth: 540,
     });
-    const name = buildFilename() + '.png';
+    const base = buildFilename();
     const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
     if (lastUrl) URL.revokeObjectURL(lastUrl);
     lastUrl = URL.createObjectURL(blob);
-    lastFile = new File([blob], name, { type: 'image/png' });
+    lastFile = new File([blob], base + '.png', { type: 'image/png' });
+
+    // Same pixels, wrapped in a PDF page of exactly the snapshot's proportions.
+    // Flate-compressed, so nothing is re-encoded and the text stays as rendered.
+    const pdf = new jspdf.jsPDF({ unit: 'px', format: [540, 960], orientation: 'portrait',
+                                  compress: true, hotfixes: ['px_scaling'] });
+    pdf.addImage(canvas, 'PNG', 0, 0, 540, 960, undefined, 'FAST');
+    const pdfBlob = pdf.output('blob');
+    if (lastPdfUrl) URL.revokeObjectURL(lastPdfUrl);
+    lastPdfUrl = URL.createObjectURL(pdfBlob);
+    lastPdfFile = new File([pdfBlob], base + '.pdf', { type: 'application/pdf' });
 
     // A web page cannot write to Photos, but the system share sheet can: on iOS it
     // offers "Save Image", on Android "Save to gallery". iOS only opens that sheet
     // from a tap of its own, and the render above is async, so the report waits in
     // our own sheet for a second tap instead of going straight to Files.
     const touch = window.matchMedia('(pointer: coarse)').matches;
-    if (touch && navigator.canShare && navigator.canShare({ files: [lastFile] })) {
+    if (touch && navigator.canShare && navigator.canShare({ files: [lastPdfFile] })) {
       openSheet();
       btn.textContent = T[lang].saveBtn; btn.disabled = false;
       return;
     }
 
     // Desktop: no share sheet worth using, so download as before.
-    downloadBlobUrl(name, lastUrl);
+    downloadBlobUrl(lastFile.name, lastUrl);
     btn.textContent = t.saved; btn.style.background = '#34C759';
     setTimeout(() => { btn.textContent = T[lang].saveBtn; btn.style.background = ''; btn.disabled = false; }, 2500);
   } catch(e) {
@@ -2543,9 +2558,9 @@ function closeSheet() {
 // title/text makes some targets drop the image and share the text instead.
 async function shareNow() {
   const t = T[lang], st = document.getElementById('shStatus');
-  if (!lastFile) return;
+  if (!lastPdfFile) return;
   try {
-    await navigator.share({ files: [lastFile] });
+    await navigator.share({ files: [lastPdfFile] });
     st.textContent = t.shareDone;
   } catch(e) {
     if (e.name === 'AbortError') return;   // teacher dismissed the share sheet
